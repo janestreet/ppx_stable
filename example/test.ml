@@ -18,7 +18,7 @@ module Records = struct
                     ~remove:[y2]
                     ~modify:[x1]
                     ~set:[z1]
-  ]
+    ]
   end
 
   let downgrade t =
@@ -73,7 +73,7 @@ module Variants = struct
                   ~remove:[Y1; Y2; Y3; T1; T2]
                   ~modify:[Z1; Z2; Z3]
                   ~add:[T]
-    ]
+          ]
   end
 
   let v1_of_t (v2 : V2.t) : V1.t =

@@ -343,7 +343,7 @@ module Stable = struct
                   ~remove:[Y1; Y2; Y3]
                   ~add:[X1; X2; X3]
                   ~modify:[Z1; Z2; Z3]
-    ]
+              ]
   end
 end
 
