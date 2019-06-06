@@ -40,15 +40,19 @@ end
 
 (* {1 Some helper functions} *)
 
-let name_of_type_name ~dir ~source ~(type_name : Longident.t) =
-  let fun_name =
-    Printf.sprintf "%s_%s"
-      (match dir with `To -> "to" | `Of -> "of")
-      (String.concat ~sep:"_" (Longident.flatten_exn type_name))
-  in
-  match source with
-  | "t" -> fun_name
-  | _ -> source ^ "_" ^ fun_name
+let name_of_type_name ~dir ~source ~type_name =
+  match type_name.ptyp_desc with
+  | Ptyp_constr ({ txt = type_name; _ }, _) ->
+    let fun_name =
+      Printf.sprintf "%s_%s"
+        (match dir with `To -> "to" | `Of -> "of")
+        (String.concat ~sep:"_" (Longident.flatten_exn type_name))
+    in
+    begin match source with
+    | "t" -> fun_name
+    | _ -> source ^ "_" ^ fun_name
+    end
+  | _ -> assert false
 
 let stable_variant_name ~type_name =
   match type_name with
@@ -56,10 +60,13 @@ let stable_variant_name ~type_name =
   | _ -> "Stable_variant_of_" ^ type_name
 
 let stable_variants ~type_ =
-  let type_name =
-    List.hd_exn (List.rev (Longident.flatten_exn type_))
-  in
-  stable_variant_name ~type_name
+  match type_.ptyp_desc with
+  | Ptyp_constr ({ txt = type_; _}, _) ->
+    let type_name =
+      List.hd_exn (List.rev (Longident.flatten_exn type_))
+    in
+    stable_variant_name ~type_name
+  | _ -> assert false
 
 let modify_field_name name = "modify_" ^ name
 
@@ -78,8 +85,6 @@ let mk_pexp_fun ~loc ~name exp =
 
 let convert_record ~loc ~source_fields ~target_fields ~modified_fields ~set_fields
       ~source_type ~target_type =
-  let target_type = ptyp_constr ~loc (Located.mk ~loc target_type) [] in
-  let source_type = ptyp_constr ~loc (Located.mk ~loc source_type) [] in
   let record_pat =
     let record_pat =
       List.map (Set.to_list source_fields) ~f:(fun name ->
@@ -230,10 +235,14 @@ let convert_variant ~loc ~source_variants ~target_variants ~modified_variants ~t
       | None -> Some (Lident x)
     in
     let init =
-      match which_type with
-      | Lapply _ -> Location.raise_errorf ~loc "Unexpected Lapply"
-      | Lident _ -> None
-      | Ldot (t, _) -> Some t
+      match which_type.ptyp_desc with
+      | Ptyp_constr (lid_loc, _) ->
+        begin match lid_loc.txt with
+        | Lapply _ -> Location.raise_errorf ~loc "Unexpected Lapply"
+        | Lident _ -> None
+        | Ldot (t, _) -> Some t
+        end
+      | _ -> assert false
     in
     let longident =
       Option.value_exn (List.fold ~init path ~f:add)
@@ -261,8 +270,7 @@ let convert_variant ~loc ~source_variants ~target_variants ~modified_variants ~t
     )
   in
   let acc =
-    let source_type = ptyp_constr ~loc (Located.mk ~loc source_type) [] in
-    let target_type = ptyp_constr ~loc (Located.mk ~loc target_type) [] in
+
     [%expr fun (v : [%t source_type]) -> ([%e rhs] : [%t target_type])]
   in
   let acc =
@@ -283,7 +291,10 @@ let conversions_of_td ~ppx_name ~target_type
   let remove = Set.of_list (module String) remove in
   let set = Set.of_list (module String) set in
   Invariant.all_disjoints ~loc ~add ~modify ~remove ~set;
-  let current_type = Longident.Lident td.ptype_name.txt in
+  let current_type =
+    Ast_helper.Typ.constr ~loc
+      (Located.map_lident td.ptype_name) (List.map ~f:fst td.ptype_params)
+  in
   let conversions =
     match target_type with
     | None -> []
@@ -381,15 +392,42 @@ let fields_or_constructors =
   let constrs_pat = elist (pexp_construct (lident __) none) in
   alt rec_fields_pat constrs_pat
 
+let type_pattern =
+  let open Ast_pattern in
+  let ident =
+    map' (pexp_ident __)
+      ~f:(fun loc _ lid ->
+        Some (Ast_builder.Default.ptyp_constr ~loc (Located.mk ~loc lid) []))
+  in
+  let type_ =
+    map' (* make sure we get a type constructor. *)
+      (pexp_extension
+         (extension (string "stable")
+            (ptyp (ptyp_constr __' __))))
+      ~f:(fun loc _ lid params ->
+        Some (Ast_builder.Default.ptyp_constr ~loc lid params))
+  in
+  alt ident type_
+
 let args =
   Deriving.Args.(
     empty
-    +> arg "version" (pexp_ident __)
+    +> arg "version" type_pattern
     +> arg "add" fields_or_constructors
     +> arg "modify" fields_or_constructors
     +> arg "set" fields_or_constructors
     +> arg "remove" fields_or_constructors
   )
+
+(* That's actually useless, it's just here so ppxlib's driver doesn't complain *)
+let rewrite_type_ext =
+  Extension.declare "stable" Extension.Context.expression
+    Ast_pattern.(ptyp (ptyp_constr __' __))
+    (fun ~loc ~path:_ _ _ -> [%expr `Do_not_use_percent_stable_outside_of_deriving_stable])
+
+let () =
+  Driver.register_transformation "stable"
+    ~extensions:[ rewrite_type_ext ]
 
 let gen ppx_name ~loc ~path:_ (_rec, tds) target_type add modify set remove =
   match tds with
