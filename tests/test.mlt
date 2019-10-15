@@ -131,7 +131,7 @@ end
 
 [%%expect
   {|
-Line _, characters 4-79:
+Line _, characters _-_:
 Error: Some fields were supposed to be removed but they were not found: `y'
 |}]
 
@@ -148,7 +148,7 @@ end
 
 [%%expect
   {|
-Line _, characters 4-79:
+Line _, characters _-_:
 Error: Some fields were supposed to be modified but they were not found: `y'
 |}]
 
@@ -165,7 +165,7 @@ end
 
 [%%expect
   {|
-Line _, characters 4-76:
+Line _, characters _-_:
 Error: This record expression is expected to have type V1.t
        The field y does not belong to type V1.t
 |}]
@@ -184,7 +184,7 @@ end
 
 [%%expect
   {|
-Line _, characters 4-94:
+Line _, characters _-_:
 Error: Sets `add' and `remove' must be disjoint but they are not: `f' found in both
 |}]
 
@@ -202,7 +202,7 @@ end
 
 [%%expect
   {|
-Line _, characters 4-94:
+Line _, characters _-_:
 Error: Sets `modify' and `set' must be disjoint but they are not: `x' found in both
 |}]
 
@@ -220,7 +220,7 @@ end
 
 [%%expect
   {|
-Line _, characters 4-94:
+Line _, characters _-_:
 Error: Some fields were supposed to be removed but they were not found: `Y'
 |}]
 
@@ -237,7 +237,7 @@ module Stable = struct
 end
 
 [%%expect {|
-Line _, characters 4-143:
+Line _, characters _-_:
 Error: stable_record: missing target version
 |}]
 
@@ -547,7 +547,7 @@ end
 
 [%%expect
   {|
-Line _, characters 4-70:
+Line _, characters _-_:
 Error: Some variants were supposed to be removed but they were not found: `Y'
 |}]
 
@@ -564,7 +564,7 @@ end
 
 [%%expect
   {|
-Line _, characters 4-70:
+Line _, characters _-_:
 Error: Some variants were supposed to be modified but they were not found: `Y'
 |}]
 
@@ -581,7 +581,7 @@ end
 
 [%%expect
   {|
-Line _, characters 4-67:
+Line _, characters _-_:
 Error: This expression has type unit -> t
        but an expression was expected of type unit -> y:'a -> 'b
        Type t is not compatible with type y:'a -> 'b
@@ -600,7 +600,7 @@ end
 
 [%%expect
   {|
-Line _, characters 4-81:
+Line _, characters _-_:
 Error: Sets `add' and `remove' must be disjoint but they are not: `F' found in both
 |}]
 
@@ -617,7 +617,7 @@ end
 
 [%%expect
   {|
-Line _, characters 4-81:
+Line _, characters _-_:
 Error: Some variants were supposed to be removed but they were not found: `y'
 |}]
 

@@ -275,7 +275,7 @@ end
 
 [%%expect
   {|
-Line _, characters 39-43:
+Line _, characters _-_:
 Error: The type constructor V1.t expects 1 argument(s),
        but is here applied to 0 argument(s)
 |}]
@@ -400,7 +400,7 @@ end
 
 [%%expect
   {|
-Line _, characters 40-44:
+Line _, characters _-_:
 Error: The type constructor V1.t expects 1 argument(s),
        but is here applied to 0 argument(s)
 |}]
@@ -480,6 +480,6 @@ module Stable = struct
 end
 
 [%%expect {|
-Line _, characters 4-56:
+Line _, characters _-_:
 Error: stable_variant: missing target version
 |}]
