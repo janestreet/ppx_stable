@@ -1,3 +1,6 @@
+ppx\_stable
+===========
+
 A ppx extension for easier implementation of conversion functions between almost
 identical types.
 
