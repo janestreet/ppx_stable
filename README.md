@@ -202,7 +202,7 @@ let convert_of_v1 (v1 : V1.t) : V2.t =
 ```ocaml
 module V1 = struct
   type t =
-    | X0 of X0.t
+   | X0 of X0.t
   [@@deriving stable_variant]
 end
 
