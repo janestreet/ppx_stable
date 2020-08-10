@@ -88,7 +88,10 @@ let mk_lident ~loc str = Located.mk ~loc (Longident.Lident str)
 let mk_module ~loc ~name ~items =
   pstr_module
     ~loc
-    (module_binding ~loc ~name:(Located.mk ~loc name) ~expr:(pmod_structure ~loc items))
+    (module_binding
+       ~loc
+       ~name:(Located.mk ~loc (Some name))
+       ~expr:(pmod_structure ~loc items))
 ;;
 
 (* fun ~name:name -> exp *)
@@ -296,7 +299,7 @@ let convert_variant
       in
       pexp_apply ~loc acc [ Labelled (String.lowercase name), f ])
   in
-  let acc = [%expr fun (v : [%t source_type]) -> ([%e rhs] : [%t target_type])] in
+  let acc = [%expr fun (v : [%t source_type]) : [%t target_type] -> [%e rhs]] in
   let acc =
     Set.fold (Set.diff source_variants target_variants) ~init:acc ~f:(fun acc name ->
       let name = remove_field_name name in
@@ -422,8 +425,7 @@ let conversions_of_td
               ~source_type:target_type
           in
           to_target, of_target
-        | Ptype_open ->
-          Location.raise_errorf ~loc "%s: open types not supported" ppx_name
+        | Ptype_open -> Location.raise_errorf ~loc "%s: open types not supported" ppx_name
         | Ptype_abstract ->
           Location.raise_errorf ~loc "%s: abstract types not supported" ppx_name
       in

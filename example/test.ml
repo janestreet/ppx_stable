@@ -99,7 +99,7 @@ module X0b = struct
   type t = float
 
   let of_int x = Base.Float.of_int x
-  let of_x0a (_ : X0a.t) = (assert false : t)
+  let of_x0a (_ : X0a.t) : t = assert false
 end
 
 module X = struct

@@ -177,8 +177,7 @@ module Stable = struct
   end
 
   module V2 = struct
-    type t = { x : int }
-    [@@deriving stable_record ~version:V1.t ~add:[ f ] ~remove:[ f ]]
+    type t = { x : int } [@@deriving stable_record ~version:V1.t ~add:[ f ] ~remove:[ f ]]
   end
 end
 
@@ -195,8 +194,7 @@ module Stable = struct
   end
 
   module V2 = struct
-    type t = { x : int }
-    [@@deriving stable_record ~version:V1.t ~modify:[ x ] ~set:[ x ]]
+    type t = { x : int } [@@deriving stable_record ~version:V1.t ~modify:[ x ] ~set:[ x ]]
   end
 end
 
@@ -213,8 +211,7 @@ module Stable = struct
   end
 
   module V2 = struct
-    type t = { y : int }
-    [@@deriving stable_record ~version:V1.t ~add:[ x ] ~remove:[ Y ]]
+    type t = { y : int } [@@deriving stable_record ~version:V1.t ~add:[ x ] ~remove:[ Y ]]
   end
 end
 
