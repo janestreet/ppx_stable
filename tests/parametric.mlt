@@ -1,6 +1,8 @@
 ;;
 #verbose true
 
+[@@@ocaml.warning "+68"]
+
 (******************************************************************************)
 (*                                                                            *)
 (* First we duplicate some of the examples from test.mlt, but changing their  *)

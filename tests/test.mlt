@@ -1,6 +1,8 @@
 ;;
 #verbose true
 
+[@@@ocaml.warning "+68"]
+
 module Stable = struct
   type a
   type b1
@@ -737,6 +739,30 @@ module Stable :
           end
         val to_V1_t : modify_X:(x:int -> V1.t) -> t -> V1.t
         val of_V1_t : modify_X:(x:float -> t) -> V1.t -> t
+      end
+  end
+|}]
+
+module Stable = struct
+  module V1 = struct
+    type t = { x : float }
+  end
+
+  module V2 = struct
+    type t = { mutable x : int } [@@deriving stable_record ~version:V1.t ~modify:[ x ]]
+  end
+end
+
+[%%expect
+  {|
+module Stable :
+  sig
+    module V1 : sig type t = { x : float; } end
+    module V2 :
+      sig
+        type t = { mutable x : int; }
+        val to_V1_t : t -> modify_x:(int -> float) -> V1.t
+        val of_V1_t : V1.t -> modify_x:(float -> int) -> t
       end
   end
 |}]

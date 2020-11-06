@@ -130,7 +130,11 @@ let convert_record
     in
     pexp_record ~loc rhs_fields None
   in
-  let acc = [%expr ([%e rhs_record] : [%t target_type])] in
+  let acc =
+    [%expr
+      let ([%p record_pat] : [%t source_type]) = _t in
+      ([%e rhs_record] : [%t target_type])]
+  in
   let acc =
     Set.fold
       (Set.union set_fields (Set.diff target_fields source_fields))
@@ -142,7 +146,7 @@ let convert_record
       let name = modify_field_name name in
       mk_pexp_fun ~loc ~name acc)
   in
-  [%expr fun ([%p record_pat] : [%t source_type]) -> [%e acc]]
+  [%expr fun (_t : [%t source_type]) -> [%e acc]]
 ;;
 
 let generate_stable_variant_module ~td ~loc ~cdl =
