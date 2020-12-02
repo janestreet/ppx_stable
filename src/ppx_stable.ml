@@ -96,15 +96,46 @@ let mk_module ~loc ~name ~items =
 
 (* fun ~name:name -> exp *)
 let mk_pexp_fun ~loc ~name exp = pexp_fun ~loc (Labelled name) None (pvar ~loc name) exp
+let recurse_name = "recurse"
 
+let map_if_recursive ~loc ~rec_flag type_name =
+  match rec_flag with
+  | Recursive -> Map.singleton (module String) type_name (evar ~loc recurse_name)
+  | Nonrecursive -> Map.empty (module String)
+;;
+
+(* we only need to mark the function recursive if we made any recursive calls. the type
+   might say recursive (the default) without actually being recursive *)
+let set_any_recursive_and_return_expr ~any_recursive (result, expr) =
+  match (result : Generic_map.replace_result) with
+  | Unchanged -> expr
+  | Replaced ->
+    any_recursive := true;
+    expr
+;;
+
+(* This is complicated so here's some help on fields:
+   - source = fields from record [@@deriving stable_record] attached to
+   - target = source + add - remove
+   - add:[ a ] = value is gong to come from ~a argument
+   - set:[ s ] = value is going to come from ~s argument
+   - modify:[ m ] = value is going to come from ~modify_m argument
+
+   In particular:
+   fields_from_args = set + (target - source) = set + (add - remove)
+   are the fields that we expect to get from ~a and ~s arguments.
+*)
 let convert_record
       ~loc
+      ~fields
       ~source_fields
       ~target_fields
       ~modified_fields
       ~set_fields
       ~source_type
       ~target_type
+      ~rec_flag
+      ~type_name
   =
   let record_pat =
     let record_pat =
@@ -115,128 +146,107 @@ let convert_record
     in
     ppat_record ~loc record_pat Closed
   in
-  let rhs_record =
-    let rhs_fields =
+  let fields_from_args = Set.union set_fields (Set.diff target_fields source_fields) in
+  let any_recursive = ref false in
+  let fields =
+    Map.of_alist_exn (module String) (List.map fields ~f:(fun ld -> ld.pld_name.txt, ld))
+  in
+  let map_if_recursive = map_if_recursive ~loc ~rec_flag type_name in
+  let target_record =
+    let fields =
       List.map (Set.to_list target_fields) ~f:(fun name ->
-        if Set.mem modified_fields name
-        then (
-          let f = evar ~loc (modify_field_name name) in
-          let application = pexp_apply ~loc f [ Asttypes.Nolabel, evar ~loc name ] in
-          mk_lident ~loc name, application)
-        else (
-          let longident = mk_lident ~loc name in
-          let expr = pexp_ident ~loc longident in
-          longident, expr))
+        let expr =
+          if Set.mem modified_fields name
+          then (
+            let f = evar ~loc (modify_field_name name) in
+            pexp_apply ~loc f [ Nolabel, evar ~loc name ])
+          else if Set.mem fields_from_args name
+          then evar ~loc name
+          else (
+            let ld = Map.find_exn fields name in
+            Generic_map.build ~loc ~map:map_if_recursive ld.pld_type (evar ~loc name)
+            |> set_any_recursive_and_return_expr ~any_recursive)
+        in
+        mk_lident ~loc name, expr)
     in
-    pexp_record ~loc rhs_fields None
+    pexp_record ~loc fields None
   in
   let acc =
-    [%expr
-      let ([%p record_pat] : [%t source_type]) = _t in
-      ([%e rhs_record] : [%t target_type])]
+    match !any_recursive with
+    | false ->
+      [%expr
+        let ([%p record_pat] : [%t source_type]) = _t in
+        ([%e target_record] : [%t target_type])]
+    | true ->
+      [%expr
+        let rec [%p pvar ~loc recurse_name] =
+          fun ([%p record_pat] : [%t source_type]) : [%t target_type] -> [%e target_record]
+        in
+        [%e evar ~loc recurse_name] _t]
   in
   let acc =
-    Set.fold
-      (Set.union set_fields (Set.diff target_fields source_fields))
-      ~init:acc
-      ~f:(fun acc name -> mk_pexp_fun ~loc ~name acc)
+    Set.fold fields_from_args ~init:acc ~f:(fun acc name -> mk_pexp_fun ~loc ~name acc)
   in
   let acc =
     Set.fold_right modified_fields ~init:acc ~f:(fun name acc ->
       let name = modify_field_name name in
       mk_pexp_fun ~loc ~name acc)
   in
+  (* we put this argument first to help with record field disambiguation at the use site *)
   [%expr fun (_t : [%t source_type]) -> [%e acc]]
 ;;
 
+let cd_args_and_value ~loc ~tuple_opt ~record ~f cd =
+  match cd.pcd_args with
+  | Pcstr_tuple tys ->
+    let args, pats =
+      List.mapi tys ~f:(fun i ty ->
+        let var = "v" ^ Int.to_string i in
+        (Nolabel, var), f ty var)
+      |> List.unzip
+    in
+    args, tuple_opt pats
+  | Pcstr_record lds ->
+    let args, pats =
+      List.mapi lds ~f:(fun i ld ->
+        let var = "v" ^ Int.to_string i in
+        ( (Labelled ld.pld_name.txt, var)
+        , (Located.lident ~loc ld.pld_name.txt, f ld.pld_type var) ))
+      |> List.unzip
+    in
+    args, Some (record pats)
+;;
+
 let generate_stable_variant_module ~td ~loc ~cdl =
-  let alias_args cd =
-    match cd.pcd_args with
-    | Pcstr_record lds -> List.mapi lds ~f:(fun i _ -> "v" ^ Int.to_string i)
-    | Pcstr_tuple fields -> List.mapi fields ~f:(fun i _ -> "v" ^ Int.to_string i)
-  in
-  let alias_fun_label name = name ^ "_fun" in
-  let labels_and_aliases cd =
-    match cd.pcd_args with
-    | Pcstr_tuple _ -> List.map (alias_args cd) ~f:(fun alias -> Nolabel, alias)
-    | Pcstr_record lds ->
-      List.map2_exn (alias_args cd) lds ~f:(fun alias ld ->
-        Labelled ld.pld_name.txt, alias)
-  in
-  let constructors =
-    List.map cdl ~f:(fun cd ->
-      let arg_aliases = alias_args cd in
-      let expr =
-        let constructed_value =
-          let arg =
-            match cd.pcd_args with
-            | Pcstr_tuple _ ->
-              pexp_tuple_opt
-                ~loc
-                (List.map arg_aliases ~f:(fun alias -> evar ~loc alias))
-            | Pcstr_record lds ->
-              Some
-                (pexp_record
-                   ~loc
-                   (List.map2_exn arg_aliases lds ~f:(fun alias ld ->
-                      Located.lident ~loc ld.pld_name.txt, evar ~loc alias))
-                   None)
-          in
-          pexp_construct ~loc (Located.lident ~loc cd.pcd_name.txt) arg
-        in
-        if List.is_empty arg_aliases
-        then [%expr fun () -> [%e constructed_value]]
-        else
-          List.fold_right
-            (labels_and_aliases cd)
-            ~init:constructed_value
-            ~f:(fun (label, alias) acc ->
-              pexp_fun ~loc label None (pvar ~loc alias) acc)
-      in
-      pstr_value
-        ~loc
-        Nonrecursive
-        [ value_binding ~loc ~pat:(pvar ~loc (String.lowercase cd.pcd_name.txt)) ~expr ])
-  in
+  let alias_fun_label cd = String.lowercase cd.pcd_name.txt ^ "_fun" in
   let map_function =
     let cases =
       List.map cdl ~f:(fun cd ->
-        let lowercase = String.lowercase cd.pcd_name.txt in
-        let arg_aliases = alias_args cd in
+        let args, pattern =
+          cd_args_and_value
+            cd
+            ~loc
+            ~tuple_opt:(ppat_tuple_opt ~loc)
+            ~record:(fun p -> ppat_record ~loc p Closed)
+            ~f:(fun _ x -> pvar ~loc x)
+        in
         let pattern =
-          let arg =
-            match cd.pcd_args with
-            | Pcstr_tuple _ ->
-              ppat_tuple_opt
-                ~loc
-                (List.map arg_aliases ~f:(fun alias -> pvar ~loc alias))
-            | Pcstr_record lds ->
-              Some
-                (ppat_record
-                   ~loc
-                   (List.map2_exn lds arg_aliases ~f:(fun ld alias ->
-                      Located.lident ~loc ld.pld_name.txt, pvar ~loc alias))
-                   Closed)
-          in
-          ppat_construct ~loc (Located.lident ~loc cd.pcd_name.txt) arg
+          ppat_construct ~loc (Located.lident ~loc cd.pcd_name.txt) pattern
         in
         let value =
-          let fun_expr = evar ~loc (alias_fun_label lowercase) in
-          if List.is_empty arg_aliases
+          let fun_expr = evar ~loc (alias_fun_label cd) in
+          if List.is_empty args
           then [%expr [%e fun_expr] ()]
           else
-            pexp_apply
-              ~loc
-              fun_expr
-              (List.map (labels_and_aliases cd) ~f:(fun (lbl, alias) ->
-                 lbl, evar ~loc alias))
+            List.map args ~f:(fun (lbl, x) -> lbl, evar ~loc x)
+            |> pexp_apply ~loc fun_expr
         in
         case ~guard:None ~lhs:pattern ~rhs:value)
     in
     let expr =
       List.fold_right ~init:(pexp_function ~loc cases) cdl ~f:(fun cd acc ->
         let name = String.lowercase cd.pcd_name.txt in
-        pexp_fun ~loc (Labelled name) None (pvar ~loc (alias_fun_label name)) acc)
+        pexp_fun ~loc (Labelled name) None (pvar ~loc (alias_fun_label cd)) acc)
     in
     mk_module
       ~loc
@@ -248,17 +258,20 @@ let generate_stable_variant_module ~td ~loc ~cdl =
   [ mk_module
       ~loc
       ~name:(stable_variant_name ~type_name:td.ptype_name.txt)
-      ~items:(constructors @ [ map_function ])
+      ~items:[ map_function ]
   ]
 ;;
 
 let convert_variant
       ~loc
+      ~constructors
       ~source_variants
       ~target_variants
       ~modified_variants
       ~target_type
       ~source_type
+      ~rec_flag
+      ~type_name
   =
   (* Create pexp_ident scoped to the same module as [which_type]. *)
   let variants_longident ~loc ~which_type path =
@@ -277,16 +290,46 @@ let convert_variant
       | _ -> assert false
     in
     let longident = Option.value_exn (List.fold ~init path ~f:add) in
-    pexp_ident ~loc (Located.mk ~loc longident)
+    Located.mk ~loc longident
+  in
+  let constructors =
+    Map.of_alist_exn
+      (module String)
+      (List.map constructors ~f:(fun cd -> cd.pcd_name.txt, cd))
+  in
+  let any_recursive = ref false in
+  let map_if_recursive = map_if_recursive ~loc ~rec_flag type_name in
+  let map_cd cd =
+    let args, value =
+      cd_args_and_value
+        cd
+        ~loc
+        ~tuple_opt:(pexp_tuple_opt ~loc)
+        ~record:(fun e -> pexp_record ~loc e None)
+        ~f:(fun ty alias ->
+          Generic_map.build ~loc ~map:map_if_recursive ty (evar ~loc alias)
+          |> set_any_recursive_and_return_expr ~any_recursive)
+    in
+    let value =
+      pexp_construct
+        ~loc
+        (variants_longident ~which_type:target_type ~loc [ cd.pcd_name.txt ])
+        value
+    in
+    if List.is_empty args
+    then [%expr fun () -> [%e value]]
+    else
+      List.fold_right args ~init:value ~f:(fun (label, alias) acc ->
+        pexp_fun ~loc label None (pvar ~loc alias) acc)
   in
   let acc =
-    [%expr
-      [%e
-        variants_longident
-          ~loc
-          ~which_type:source_type
-          [ stable_variants ~type_:source_type; "Helper"; "map" ]]
-        v]
+    let map_fn =
+      variants_longident
+        ~loc
+        ~which_type:source_type
+        [ stable_variants ~type_:source_type; "Helper"; "map" ]
+    in
+    [%expr [%e pexp_ident ~loc map_fn] v]
   in
   let rhs =
     Set.fold source_variants ~init:acc ~f:(fun acc name ->
@@ -295,28 +338,37 @@ let convert_variant
         then evar ~loc (modify_field_name name)
         else if not (Set.mem target_variants name)
         then evar ~loc (remove_field_name name)
-        else
-          variants_longident
-            ~loc
-            ~which_type:target_type
-            [ stable_variants ~type_:target_type; String.lowercase name ]
+        else map_cd (Map.find_exn constructors name)
       in
       pexp_apply ~loc acc [ Labelled (String.lowercase name), f ])
   in
-  let acc = [%expr fun (v : [%t source_type]) : [%t target_type] -> [%e rhs]] in
+  let acc =
+    match !any_recursive with
+    | false -> [%expr fun (v : [%t source_type]) : [%t target_type] -> [%e rhs]]
+    | true ->
+      [%expr
+        let rec [%p pvar ~loc recurse_name] =
+          fun (v : [%t source_type]) : [%t target_type] -> [%e rhs]
+        in
+        [%e evar ~loc recurse_name]]
+  in
   let acc =
     Set.fold (Set.diff source_variants target_variants) ~init:acc ~f:(fun acc name ->
       let name = remove_field_name name in
       mk_pexp_fun ~loc ~name acc)
   in
-  Set.fold_right modified_variants ~init:acc ~f:(fun name acc ->
-    let name = modify_field_name name in
-    mk_pexp_fun ~loc ~name acc)
+  let acc =
+    Set.fold_right modified_variants ~init:acc ~f:(fun name acc ->
+      let name = modify_field_name name in
+      mk_pexp_fun ~loc ~name acc)
+  in
+  acc
 ;;
 
 let conversions_of_td
       ~ppx_name
       ~target_type
+      ~rec_flag
       ?(add = [])
       ?(remove = [])
       ?(modify = [])
@@ -373,22 +425,28 @@ let conversions_of_td
           let to_target =
             convert_record
               ~loc
+              ~fields:lds
               ~source_fields:current_fields
               ~target_fields:other_fields
               ~modified_fields:modify
               ~set_fields:set
               ~target_type
               ~source_type:current_type
+              ~rec_flag
+              ~type_name:td.ptype_name.txt
           in
           let of_target =
             convert_record
               ~loc
+              ~fields:lds
               ~source_fields:other_fields
               ~target_fields:current_fields
               ~modified_fields:modify
               ~set_fields:set
               ~target_type:current_type
               ~source_type:target_type
+              ~rec_flag
+              ~type_name:td.ptype_name.txt
           in
           to_target, of_target
         | Ptype_variant cdl ->
@@ -413,20 +471,26 @@ let conversions_of_td
           let to_target =
             convert_variant
               ~loc
+              ~constructors:cdl
               ~source_variants:current_variants
               ~target_variants:other_variants
               ~modified_variants:modify
               ~target_type
               ~source_type:current_type
+              ~rec_flag
+              ~type_name:td.ptype_name.txt
           in
           let of_target =
             convert_variant
               ~loc
+              ~constructors:cdl
               ~source_variants:other_variants
               ~target_variants:current_variants
               ~modified_variants:modify
               ~target_type:current_type
               ~source_type:target_type
+              ~rec_flag
+              ~type_name:td.ptype_name.txt
           in
           to_target, of_target
         | Ptype_open -> Location.raise_errorf ~loc "%s: open types not supported" ppx_name
@@ -490,9 +554,10 @@ let rewrite_type_ext =
 
 let () = Driver.register_transformation "stable" ~extensions:[ rewrite_type_ext ]
 
-let gen ppx_name ~loc ~path:_ (_rec, tds) target_type add modify set remove =
+let gen ppx_name ~loc ~path:_ (rec_flag, tds) target_type add modify set remove =
   match tds with
-  | [ td ] -> conversions_of_td ~ppx_name ~target_type ?add ?remove ?modify ?set td
+  | [ td ] ->
+    conversions_of_td ~rec_flag ~ppx_name ~target_type ?add ?remove ?modify ?set td
   | _ ->
     Location.raise_errorf
       ~loc
