@@ -1,4 +1,4 @@
-(* Some helpers that subscribe to the Core_kernel.Stable_module_types  *)
+(* Some helpers that subscribe to the Core.Stable_module_types  *)
 
 module Stable_container1 = struct
   type 'a t = { value : 'a }
