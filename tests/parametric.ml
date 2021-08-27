@@ -46,35 +46,39 @@ module Basic_variant = struct
       | Z3
     [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : ('a, 'b, 'c, 'd, 'e, 'f, 'j, 'k, 'l) t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map
-              ~i0:i0_fun
-              ~i1:i1_fun
-              ~i2:i2_fun
-              ~x1:x1_fun
-              ~x2:x2_fun
-              ~x3:x3_fun
-              ~z1:z1_fun
-              ~z2:z2_fun
-              ~z3:z3_fun
-          = function
-            | I0 -> i0_fun ()
-            | I1 v0 -> i1_fun v0
-            | I2 (v0, v1) -> i2_fun v0 v1
-            | X1 -> x1_fun ()
-            | X2 v0 -> x2_fun v0
-            | X3 (v0, v1) -> x3_fun v0 v1
-            | Z1 (v0, v1) -> z1_fun v0 v1
-            | Z2 v0 -> z2_fun v0
-            | Z3 -> z3_fun ()
-        ;;
+      let _ = fun (_ : ('a, 'b, 'c, 'd, 'e, 'f, 'j, 'k, 'l) t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map
+                ~i0:i0_fun
+                ~i1:i1_fun
+                ~i2:i2_fun
+                ~x1:x1_fun
+                ~x2:x2_fun
+                ~x3:x3_fun
+                ~z1:z1_fun
+                ~z2:z2_fun
+                ~z3:z3_fun
+            = function
+              | I0 -> i0_fun ()
+              | I1 v0 -> i1_fun v0
+              | I2 (v0, v1) -> i2_fun v0 v1
+              | X1 -> x1_fun ()
+              | X2 v0 -> x2_fun v0
+              | X3 (v0, v1) -> x3_fun v0 v1
+              | Z1 (v0, v1) -> z1_fun v0 v1
+              | Z2 v0 -> z2_fun v0
+              | Z3 -> z3_fun ()
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -161,17 +165,21 @@ module Add_type_parameter_variant = struct
   module V1 = struct
     type t = Int of int [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~int:int_fun = function
-          | Int v0 -> int_fun v0
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~int:int_fun = function
+            | Int v0 -> int_fun v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -182,26 +190,34 @@ module Add_type_parameter_variant = struct
       | Otherwise of 'a
     [@@deriving_inline stable_variant ~version:V1.t ~remove:[ Otherwise ]]
 
-    let _ = fun (_ : 'a t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~int:int_fun ~otherwise:otherwise_fun = function
-          | Int v0 -> int_fun v0
-          | Otherwise v0 -> otherwise_fun v0
-        ;;
+      let _ = fun (_ : 'a t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~int:int_fun ~otherwise:otherwise_fun = function
+            | Int v0 -> int_fun v0
+            | Otherwise v0 -> otherwise_fun v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
 
-    let to_V1_t ~remove_Otherwise (v : 'a t) : V1.t =
-      Stable_variant.Helper.map v ~int:(fun v0 -> V1.Int v0) ~otherwise:remove_Otherwise
-    ;;
+      let to_V1_t ~remove_Otherwise (v : 'a t) : V1.t =
+        Stable_variant.Helper.map v ~int:(fun v0 -> V1.Int v0) ~otherwise:remove_Otherwise
+      ;;
 
-    let _ = to_V1_t
-    let of_V1_t (v : V1.t) : 'a t = V1.Stable_variant.Helper.map v ~int:(fun v0 -> Int v0)
-    let _ = of_V1_t
+      let _ = to_V1_t
+
+      let of_V1_t (v : V1.t) : 'a t =
+        V1.Stable_variant.Helper.map v ~int:(fun v0 -> Int v0)
+      ;;
+
+      let _ = of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -211,17 +227,21 @@ module Change_type_parameter_variant = struct
   module V1 = struct
     type 'a t = Foo of 'a [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : 'a t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~foo:foo_fun = function
-          | Foo v0 -> foo_fun v0
-        ;;
+      let _ = fun (_ : 'a t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~foo:foo_fun = function
+            | Foo v0 -> foo_fun v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end

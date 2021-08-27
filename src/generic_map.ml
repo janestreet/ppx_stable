@@ -55,8 +55,7 @@ let rec apply ~loc ~map t expr =
      | ts ->
        let exprs =
          (Nolabel, expr)
-         ::
-         List.mapi ts ~f:(fun i t ->
+         :: List.mapi ts ~f:(fun i t ->
            Labelled ("f" ^ Int.to_string (i + 1)), apply_fn ~loc ~map t)
        in
        pexp_apply ~loc map_fn exprs)

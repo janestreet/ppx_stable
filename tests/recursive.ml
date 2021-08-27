@@ -31,20 +31,24 @@ module Variant_basic = struct
           }
     [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~a:a_fun ~b:b_fun ~c:c_fun ~d:d_fun = function
-          | A -> a_fun ()
-          | B v0 -> b_fun v0
-          | C (v0, v1) -> c_fun v0 v1
-          | D { a = v0; b = v1 } -> d_fun ~a:v0 ~b:v1
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~a:a_fun ~b:b_fun ~c:c_fun ~d:d_fun = function
+            | A -> a_fun ()
+            | B v0 -> b_fun v0
+            | C (v0, v1) -> c_fun v0 v1
+            | D { a = v0; b = v1 } -> d_fun ~a:v0 ~b:v1
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -60,48 +64,52 @@ module Variant_basic = struct
           }
     [@@deriving_inline stable_variant ~version:V1.t]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~a:a_fun ~b:b_fun ~c:c_fun ~d:d_fun = function
-          | A -> a_fun ()
-          | B v0 -> b_fun v0
-          | C (v0, v1) -> c_fun v0 v1
-          | D { a = v0; b = v1 } -> d_fun ~a:v0 ~b:v1
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~a:a_fun ~b:b_fun ~c:c_fun ~d:d_fun = function
+            | A -> a_fun ()
+            | B v0 -> b_fun v0
+            | C (v0, v1) -> c_fun v0 v1
+            | D { a = v0; b = v1 } -> d_fun ~a:v0 ~b:v1
+          ;;
+
+          let _ = map
+        end
       end
-    end
 
-    let to_V1_t =
-      let rec recurse (v : t) : V1.t =
-        Stable_variant.Helper.map
-          v
-          ~a:(fun () -> V1.A)
-          ~b:(fun v0 -> V1.B (recurse v0))
-          ~c:(fun v0 v1 -> V1.C (recurse v0, recurse v1))
-          ~d:(fun ~a:v0 ~b:v1 -> V1.D { a = recurse v0; b = recurse v1 })
-      in
-      recurse
-    ;;
+      let to_V1_t =
+        let rec recurse (v : t) : V1.t =
+          Stable_variant.Helper.map
+            v
+            ~a:(fun () -> V1.A)
+            ~b:(fun v0 -> V1.B (recurse v0))
+            ~c:(fun v0 v1 -> V1.C (recurse v0, recurse v1))
+            ~d:(fun ~a:v0 ~b:v1 -> V1.D { a = recurse v0; b = recurse v1 })
+        in
+        recurse
+      ;;
 
-    let _ = to_V1_t
+      let _ = to_V1_t
 
-    let of_V1_t =
-      let rec recurse (v : V1.t) : t =
-        V1.Stable_variant.Helper.map
-          v
-          ~a:(fun () -> A)
-          ~b:(fun v0 -> B (recurse v0))
-          ~c:(fun v0 v1 -> C (recurse v0, recurse v1))
-          ~d:(fun ~a:v0 ~b:v1 -> D { a = recurse v0; b = recurse v1 })
-      in
-      recurse
-    ;;
+      let of_V1_t =
+        let rec recurse (v : V1.t) : t =
+          V1.Stable_variant.Helper.map
+            v
+            ~a:(fun () -> A)
+            ~b:(fun v0 -> B (recurse v0))
+            ~c:(fun v0 v1 -> C (recurse v0, recurse v1))
+            ~d:(fun ~a:v0 ~b:v1 -> D { a = recurse v0; b = recurse v1 })
+        in
+        recurse
+      ;;
 
-    let _ = of_V1_t
+      let _ = of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -149,18 +157,22 @@ module Variant_nested = struct
       | B of unit * (unit * t)
     [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~a:a_fun ~b:b_fun = function
-          | A -> a_fun ()
-          | B (v0, v1) -> b_fun v0 v1
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~a:a_fun ~b:b_fun = function
+            | A -> a_fun ()
+            | B (v0, v1) -> b_fun v0 v1
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -171,50 +183,54 @@ module Variant_nested = struct
       | B of unit * (unit * t)
     [@@deriving_inline stable_variant ~version:V1.t]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~a:a_fun ~b:b_fun = function
-          | A -> a_fun ()
-          | B (v0, v1) -> b_fun v0 v1
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~a:a_fun ~b:b_fun = function
+            | A -> a_fun ()
+            | B (v0, v1) -> b_fun v0 v1
+          ;;
+
+          let _ = map
+        end
       end
-    end
 
-    let to_V1_t =
-      let rec recurse (v : t) : V1.t =
-        Stable_variant.Helper.map
-          v
-          ~a:(fun () -> V1.A)
-          ~b:(fun v0 v1 ->
-            V1.B
-              ( v0
-              , let v0, v1 = v1 in
-                v0, recurse v1 ))
-      in
-      recurse
-    ;;
+      let to_V1_t =
+        let rec recurse (v : t) : V1.t =
+          Stable_variant.Helper.map
+            v
+            ~a:(fun () -> V1.A)
+            ~b:(fun v0 v1 ->
+              V1.B
+                ( v0
+                , let v0, v1 = v1 in
+                  v0, recurse v1 ))
+        in
+        recurse
+      ;;
 
-    let _ = to_V1_t
+      let _ = to_V1_t
 
-    let of_V1_t =
-      let rec recurse (v : V1.t) : t =
-        V1.Stable_variant.Helper.map
-          v
-          ~a:(fun () -> A)
-          ~b:(fun v0 v1 ->
-            B
-              ( v0
-              , let v0, v1 = v1 in
-                v0, recurse v1 ))
-      in
-      recurse
-    ;;
+      let of_V1_t =
+        let rec recurse (v : V1.t) : t =
+          V1.Stable_variant.Helper.map
+            v
+            ~a:(fun () -> A)
+            ~b:(fun v0 v1 ->
+              B
+                ( v0
+                , let v0, v1 = v1 in
+                  v0, recurse v1 ))
+        in
+        recurse
+      ;;
 
-    let _ = of_V1_t
+      let _ = of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -230,27 +246,31 @@ module Variant_pervasives = struct
       | List of t list
     [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map
-              ~option:option_fun
-              ~ref:ref_fun
-              ~lazy_t:lazy_t_fun
-              ~array:array_fun
-              ~list:list_fun
-          = function
-            | Option v0 -> option_fun v0
-            | Ref v0 -> ref_fun v0
-            | Lazy_t v0 -> lazy_t_fun v0
-            | Array v0 -> array_fun v0
-            | List v0 -> list_fun v0
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map
+                ~option:option_fun
+                ~ref:ref_fun
+                ~lazy_t:lazy_t_fun
+                ~array:array_fun
+                ~list:list_fun
+            = function
+              | Option v0 -> option_fun v0
+              | Ref v0 -> ref_fun v0
+              | Lazy_t v0 -> lazy_t_fun v0
+              | Array v0 -> array_fun v0
+              | List v0 -> list_fun v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -264,57 +284,61 @@ module Variant_pervasives = struct
       | List of t list
     [@@deriving_inline stable_variant ~version:V1.t]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map
-              ~option:option_fun
-              ~ref:ref_fun
-              ~lazy_t:lazy_t_fun
-              ~array:array_fun
-              ~list:list_fun
-          = function
-            | Option v0 -> option_fun v0
-            | Ref v0 -> ref_fun v0
-            | Lazy_t v0 -> lazy_t_fun v0
-            | Array v0 -> array_fun v0
-            | List v0 -> list_fun v0
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map
+                ~option:option_fun
+                ~ref:ref_fun
+                ~lazy_t:lazy_t_fun
+                ~array:array_fun
+                ~list:list_fun
+            = function
+              | Option v0 -> option_fun v0
+              | Ref v0 -> ref_fun v0
+              | Lazy_t v0 -> lazy_t_fun v0
+              | Array v0 -> array_fun v0
+              | List v0 -> list_fun v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
 
-    let to_V1_t =
-      let rec recurse (v : t) : V1.t =
-        Stable_variant.Helper.map
-          v
-          ~array:(fun v0 -> V1.Array (Stdlib.Array.map (fun x -> recurse x) v0))
-          ~lazy_t:(fun v0 -> V1.Lazy_t (lazy (recurse (Stdlib.Lazy.force v0))))
-          ~list:(fun v0 -> V1.List (Stdlib.List.map (fun x -> recurse x) v0))
-          ~option:(fun v0 -> V1.Option (Stdlib.Option.map (fun x -> recurse x) v0))
-          ~ref:(fun v0 -> V1.Ref (ref (recurse !v0)))
-      in
-      recurse
-    ;;
+      let to_V1_t =
+        let rec recurse (v : t) : V1.t =
+          Stable_variant.Helper.map
+            v
+            ~array:(fun v0 -> V1.Array (Stdlib.Array.map (fun x -> recurse x) v0))
+            ~lazy_t:(fun v0 -> V1.Lazy_t (lazy (recurse (Stdlib.Lazy.force v0))))
+            ~list:(fun v0 -> V1.List (Stdlib.List.map (fun x -> recurse x) v0))
+            ~option:(fun v0 -> V1.Option (Stdlib.Option.map (fun x -> recurse x) v0))
+            ~ref:(fun v0 -> V1.Ref (ref (recurse !v0)))
+        in
+        recurse
+      ;;
 
-    let _ = to_V1_t
+      let _ = to_V1_t
 
-    let of_V1_t =
-      let rec recurse (v : V1.t) : t =
-        V1.Stable_variant.Helper.map
-          v
-          ~array:(fun v0 -> Array (Stdlib.Array.map (fun x -> recurse x) v0))
-          ~lazy_t:(fun v0 -> Lazy_t (lazy (recurse (Stdlib.Lazy.force v0))))
-          ~list:(fun v0 -> List (Stdlib.List.map (fun x -> recurse x) v0))
-          ~option:(fun v0 -> Option (Stdlib.Option.map (fun x -> recurse x) v0))
-          ~ref:(fun v0 -> Ref (ref (recurse !v0)))
-      in
-      recurse
-    ;;
+      let of_V1_t =
+        let rec recurse (v : V1.t) : t =
+          V1.Stable_variant.Helper.map
+            v
+            ~array:(fun v0 -> Array (Stdlib.Array.map (fun x -> recurse x) v0))
+            ~lazy_t:(fun v0 -> Lazy_t (lazy (recurse (Stdlib.Lazy.force v0))))
+            ~list:(fun v0 -> List (Stdlib.List.map (fun x -> recurse x) v0))
+            ~option:(fun v0 -> Option (Stdlib.Option.map (fun x -> recurse x) v0))
+            ~ref:(fun v0 -> Ref (ref (recurse !v0)))
+        in
+        recurse
+      ;;
 
-    let _ = of_V1_t
+      let _ = of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -383,19 +407,23 @@ module Variant_with_container_missing_map = struct
       | C_bad of t Stable_container_bad.t
     [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~c1:c1_fun ~c2:c2_fun ~c_bad:c_bad_fun = function
-          | C1 v0 -> c1_fun v0
-          | C2 v0 -> c2_fun v0
-          | C_bad v0 -> c_bad_fun v0
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~c1:c1_fun ~c2:c2_fun ~c_bad:c_bad_fun = function
+            | C1 v0 -> c1_fun v0
+            | C2 v0 -> c2_fun v0
+            | C_bad v0 -> c_bad_fun v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -413,55 +441,59 @@ module Variant_with_container_missing_map = struct
             C_bad
           ]]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~c1:c1_fun ~c2:c2_fun ~c_bad:c_bad_fun = function
-          | C1 v0 -> c1_fun v0
-          | C2 v0 -> c2_fun v0
-          | C_bad v0 -> c_bad_fun v0
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~c1:c1_fun ~c2:c2_fun ~c_bad:c_bad_fun = function
+            | C1 v0 -> c1_fun v0
+            | C2 v0 -> c2_fun v0
+            | C_bad v0 -> c_bad_fun v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
 
-    let to_V1_t ~modify_C_bad =
-      let rec recurse (v : t) : V1.t =
-        Stable_variant.Helper.map
-          v
-          ~c1:(fun v0 -> V1.C1 (Stable_container1.map v0 ~f:(fun x -> recurse x)))
-          ~c2:(fun v0 ->
-            V1.C2
-              (Stable_container2.map
-                 v0
-                 ~f1:(fun x -> recurse x)
-                 ~f2:(fun x -> Stdlib.Option.map (fun x -> recurse x) x)))
-          ~c_bad:modify_C_bad
-      in
-      recurse
-    ;;
+      let to_V1_t ~modify_C_bad =
+        let rec recurse (v : t) : V1.t =
+          Stable_variant.Helper.map
+            v
+            ~c1:(fun v0 -> V1.C1 (Stable_container1.map v0 ~f:(fun x -> recurse x)))
+            ~c2:(fun v0 ->
+              V1.C2
+                (Stable_container2.map
+                   v0
+                   ~f1:(fun x -> recurse x)
+                   ~f2:(fun x -> Stdlib.Option.map (fun x -> recurse x) x)))
+            ~c_bad:modify_C_bad
+        in
+        recurse
+      ;;
 
-    let _ = to_V1_t
+      let _ = to_V1_t
 
-    let of_V1_t ~modify_C_bad =
-      let rec recurse (v : V1.t) : t =
-        V1.Stable_variant.Helper.map
-          v
-          ~c1:(fun v0 -> C1 (Stable_container1.map v0 ~f:(fun x -> recurse x)))
-          ~c2:(fun v0 ->
-            C2
-              (Stable_container2.map
-                 v0
-                 ~f1:(fun x -> recurse x)
-                 ~f2:(fun x -> Stdlib.Option.map (fun x -> recurse x) x)))
-          ~c_bad:modify_C_bad
-      in
-      recurse
-    ;;
+      let of_V1_t ~modify_C_bad =
+        let rec recurse (v : V1.t) : t =
+          V1.Stable_variant.Helper.map
+            v
+            ~c1:(fun v0 -> C1 (Stable_container1.map v0 ~f:(fun x -> recurse x)))
+            ~c2:(fun v0 ->
+              C2
+                (Stable_container2.map
+                   v0
+                   ~f1:(fun x -> recurse x)
+                   ~f2:(fun x -> Stdlib.Option.map (fun x -> recurse x) x)))
+            ~c_bad:modify_C_bad
+        in
+        recurse
+      ;;
 
-    let _ = of_V1_t
+      let _ = of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -572,23 +604,27 @@ module Variant_with_changes = struct
       | Ar of t
     [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~mn:mn_fun ~mr:mr_fun ~kn:kn_fun ~kr:kr_fun ~an:an_fun ~ar:ar_fun
-          = function
-            | Mn v0 -> mn_fun v0
-            | Mr v0 -> mr_fun v0
-            | Kn v0 -> kn_fun v0
-            | Kr v0 -> kr_fun v0
-            | An v0 -> an_fun v0
-            | Ar v0 -> ar_fun v0
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~mn:mn_fun ~mr:mr_fun ~kn:kn_fun ~kr:kr_fun ~an:an_fun ~ar:ar_fun
+            = function
+              | Mn v0 -> mn_fun v0
+              | Mr v0 -> mr_fun v0
+              | Kn v0 -> kn_fun v0
+              | Kr v0 -> kr_fun v0
+              | An v0 -> an_fun v0
+              | Ar v0 -> ar_fun v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -604,55 +640,59 @@ module Variant_with_changes = struct
     [@@deriving_inline
       stable_variant ~version:V1.t ~remove:[ Rn; Rr ] ~add:[ An; Ar ] ~modify:[ Mn; Mr ]]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~mn:mn_fun ~mr:mr_fun ~kn:kn_fun ~kr:kr_fun ~rn:rn_fun ~rr:rr_fun
-          = function
-            | Mn v0 -> mn_fun v0
-            | Mr (v0, v1) -> mr_fun v0 v1
-            | Kn v0 -> kn_fun v0
-            | Kr v0 -> kr_fun v0
-            | Rn v0 -> rn_fun v0
-            | Rr v0 -> rr_fun v0
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~mn:mn_fun ~mr:mr_fun ~kn:kn_fun ~kr:kr_fun ~rn:rn_fun ~rr:rr_fun
+            = function
+              | Mn v0 -> mn_fun v0
+              | Mr (v0, v1) -> mr_fun v0 v1
+              | Kn v0 -> kn_fun v0
+              | Kr v0 -> kr_fun v0
+              | Rn v0 -> rn_fun v0
+              | Rr v0 -> rr_fun v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
 
-    let to_V1_t ~modify_Mn ~modify_Mr ~remove_Rr ~remove_Rn =
-      let rec recurse (v : t) : V1.t =
-        Stable_variant.Helper.map
-          v
-          ~kn:(fun v0 -> V1.Kn v0)
-          ~kr:(fun v0 -> V1.Kr (recurse v0))
-          ~mn:modify_Mn
-          ~mr:modify_Mr
-          ~rn:remove_Rn
-          ~rr:remove_Rr
-      in
-      recurse
-    ;;
+      let to_V1_t ~modify_Mn ~modify_Mr ~remove_Rr ~remove_Rn =
+        let rec recurse (v : t) : V1.t =
+          Stable_variant.Helper.map
+            v
+            ~kn:(fun v0 -> V1.Kn v0)
+            ~kr:(fun v0 -> V1.Kr (recurse v0))
+            ~mn:modify_Mn
+            ~mr:modify_Mr
+            ~rn:remove_Rn
+            ~rr:remove_Rr
+        in
+        recurse
+      ;;
 
-    let _ = to_V1_t
+      let _ = to_V1_t
 
-    let of_V1_t ~modify_Mn ~modify_Mr ~remove_Ar ~remove_An =
-      let rec recurse (v : V1.t) : t =
-        V1.Stable_variant.Helper.map
-          v
-          ~an:remove_An
-          ~ar:remove_Ar
-          ~kn:(fun v0 -> Kn v0)
-          ~kr:(fun v0 -> Kr (recurse v0))
-          ~mn:modify_Mn
-          ~mr:modify_Mr
-      in
-      recurse
-    ;;
+      let of_V1_t ~modify_Mn ~modify_Mr ~remove_Ar ~remove_An =
+        let rec recurse (v : V1.t) : t =
+          V1.Stable_variant.Helper.map
+            v
+            ~an:remove_An
+            ~ar:remove_Ar
+            ~kn:(fun v0 -> Kn v0)
+            ~kr:(fun v0 -> Kr (recurse v0))
+            ~mn:modify_Mn
+            ~mr:modify_Mr
+        in
+        recurse
+      ;;
 
-    let _ = of_V1_t
+      let _ = of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -720,17 +760,21 @@ module Deep = struct
     type t = F of (t * t list) option list array lazy_t ref
     [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~f:f_fun = function
-          | F v0 -> f_fun v0
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~f:f_fun = function
+            | F v0 -> f_fun v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -739,63 +783,67 @@ module Deep = struct
     type t = F of (t * t list) option list array lazy_t ref
     [@@deriving_inline stable_variant ~version:V1.t]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~f:f_fun = function
-          | F v0 -> f_fun v0
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~f:f_fun = function
+            | F v0 -> f_fun v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
 
-    let to_V1_t =
-      let rec recurse (v : t) : V1.t =
-        Stable_variant.Helper.map v ~f:(fun v0 ->
-          V1.F
-            (ref
-               (lazy
-                 (Stdlib.Array.map
-                    (fun x ->
-                       Stdlib.List.map
-                         (fun x ->
-                            Stdlib.Option.map
-                              (fun x ->
-                                 let v0, v1 = x in
-                                 recurse v0, Stdlib.List.map (fun x -> recurse x) v1)
-                              x)
-                         x)
-                    (Stdlib.Lazy.force !v0)))))
-      in
-      recurse
-    ;;
+      let to_V1_t =
+        let rec recurse (v : t) : V1.t =
+          Stable_variant.Helper.map v ~f:(fun v0 ->
+            V1.F
+              (ref
+                 (lazy
+                   (Stdlib.Array.map
+                      (fun x ->
+                         Stdlib.List.map
+                           (fun x ->
+                              Stdlib.Option.map
+                                (fun x ->
+                                   let v0, v1 = x in
+                                   recurse v0, Stdlib.List.map (fun x -> recurse x) v1)
+                                x)
+                           x)
+                      (Stdlib.Lazy.force !v0)))))
+        in
+        recurse
+      ;;
 
-    let _ = to_V1_t
+      let _ = to_V1_t
 
-    let of_V1_t =
-      let rec recurse (v : V1.t) : t =
-        V1.Stable_variant.Helper.map v ~f:(fun v0 ->
-          F
-            (ref
-               (lazy
-                 (Stdlib.Array.map
-                    (fun x ->
-                       Stdlib.List.map
-                         (fun x ->
-                            Stdlib.Option.map
-                              (fun x ->
-                                 let v0, v1 = x in
-                                 recurse v0, Stdlib.List.map (fun x -> recurse x) v1)
-                              x)
-                         x)
-                    (Stdlib.Lazy.force !v0)))))
-      in
-      recurse
-    ;;
+      let of_V1_t =
+        let rec recurse (v : V1.t) : t =
+          V1.Stable_variant.Helper.map v ~f:(fun v0 ->
+            F
+              (ref
+                 (lazy
+                   (Stdlib.Array.map
+                      (fun x ->
+                         Stdlib.List.map
+                           (fun x ->
+                              Stdlib.Option.map
+                                (fun x ->
+                                   let v0, v1 = x in
+                                   recurse v0, Stdlib.List.map (fun x -> recurse x) v1)
+                                x)
+                           x)
+                      (Stdlib.Lazy.force !v0)))))
+        in
+        recurse
+      ;;
 
-    let _ = of_V1_t
+      let _ = of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -805,17 +853,21 @@ module T_and_s = struct
   module V1 = struct
     type t = F of t [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~f:f_fun = function
-          | F v0 -> f_fun v0
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~f:f_fun = function
+            | F v0 -> f_fun v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -823,35 +875,39 @@ module T_and_s = struct
   module V2 = struct
     type s = F of s [@@deriving_inline stable_variant ~version:V1.t]
 
-    let _ = fun (_ : s) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant_of_s = struct
-      module Helper = struct
-        let map ~f:f_fun = function
-          | F v0 -> f_fun v0
-        ;;
+      let _ = fun (_ : s) -> ()
 
-        let _ = map
+      module Stable_variant_of_s = struct
+        module Helper = struct
+          let map ~f:f_fun = function
+            | F v0 -> f_fun v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
 
-    let s_to_V1_t =
-      let rec recurse (v : s) : V1.t =
-        Stable_variant_of_s.Helper.map v ~f:(fun v0 -> V1.F (recurse v0))
-      in
-      recurse
-    ;;
+      let s_to_V1_t =
+        let rec recurse (v : s) : V1.t =
+          Stable_variant_of_s.Helper.map v ~f:(fun v0 -> V1.F (recurse v0))
+        in
+        recurse
+      ;;
 
-    let _ = s_to_V1_t
+      let _ = s_to_V1_t
 
-    let s_of_V1_t =
-      let rec recurse (v : V1.t) : s =
-        V1.Stable_variant.Helper.map v ~f:(fun v0 -> F (recurse v0))
-      in
-      recurse
-    ;;
+      let s_of_V1_t =
+        let rec recurse (v : V1.t) : s =
+          V1.Stable_variant.Helper.map v ~f:(fun v0 -> F (recurse v0))
+        in
+        recurse
+      ;;
 
-    let _ = s_of_V1_t
+      let _ = s_of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end

@@ -117,17 +117,21 @@ module Basic_variant = struct
   module V1 = struct
     type t = X [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~x:x_fun = function
-          | X -> x_fun ()
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~x:x_fun = function
+            | X -> x_fun ()
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -135,22 +139,26 @@ module Basic_variant = struct
   module V2 = struct
     type t = Y [@@deriving_inline stable_variant ~version:V1.t ~add:[ X ] ~remove:[ Y ]]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~y:y_fun = function
-          | Y -> y_fun ()
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~y:y_fun = function
+            | Y -> y_fun ()
+          ;;
+
+          let _ = map
+        end
       end
-    end
 
-    let to_V1_t ~remove_Y (v : t) : V1.t = Stable_variant.Helper.map v ~y:remove_Y
-    let _ = to_V1_t
-    let of_V1_t ~remove_X (v : V1.t) : t = V1.Stable_variant.Helper.map v ~x:remove_X
-    let _ = of_V1_t
+      let to_V1_t ~remove_Y (v : t) : V1.t = Stable_variant.Helper.map v ~y:remove_Y
+      let _ = to_V1_t
+      let of_V1_t ~remove_X (v : V1.t) : t = V1.Stable_variant.Helper.map v ~x:remove_X
+      let _ = of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -183,35 +191,39 @@ module Basic_variant2 = struct
       | Z3
     [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map
-              ~i0:i0_fun
-              ~i1:i1_fun
-              ~i2:i2_fun
-              ~x1:x1_fun
-              ~x2:x2_fun
-              ~x3:x3_fun
-              ~z1:z1_fun
-              ~z2:z2_fun
-              ~z3:z3_fun
-          = function
-            | I0 -> i0_fun ()
-            | I1 v0 -> i1_fun v0
-            | I2 (v0, v1) -> i2_fun v0 v1
-            | X1 -> x1_fun ()
-            | X2 v0 -> x2_fun v0
-            | X3 (v0, v1) -> x3_fun v0 v1
-            | Z1 (v0, v1) -> z1_fun v0 v1
-            | Z2 v0 -> z2_fun v0
-            | Z3 -> z3_fun ()
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map
+                ~i0:i0_fun
+                ~i1:i1_fun
+                ~i2:i2_fun
+                ~x1:x1_fun
+                ~x2:x2_fun
+                ~x3:x3_fun
+                ~z1:z1_fun
+                ~z2:z2_fun
+                ~z3:z3_fun
+            = function
+              | I0 -> i0_fun ()
+              | I1 v0 -> i1_fun v0
+              | I2 (v0, v1) -> i2_fun v0 v1
+              | X1 -> x1_fun ()
+              | X2 v0 -> x2_fun v0
+              | X3 (v0, v1) -> x3_fun v0 v1
+              | Z1 (v0, v1) -> z1_fun v0 v1
+              | Z2 v0 -> z2_fun v0
+              | Z3 -> z3_fun ()
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -234,78 +246,89 @@ module Basic_variant2 = struct
         ~add:[ X1; X2; X3 ]
         ~modify:[ Z1; Z2; Z3 ]]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map
-              ~i0:i0_fun
-              ~i1:i1_fun
-              ~i2:i2_fun
-              ~y1:y1_fun
-              ~y2:y2_fun
-              ~y3:y3_fun
-              ~z1:z1_fun
-              ~z2:z2_fun
-              ~z3:z3_fun
-          = function
-            | I0 -> i0_fun ()
-            | I1 v0 -> i1_fun v0
-            | I2 (v0, v1) -> i2_fun v0 v1
-            | Y1 -> y1_fun ()
-            | Y2 v0 -> y2_fun v0
-            | Y3 (v0, v1) -> y3_fun v0 v1
-            | Z1 -> z1_fun ()
-            | Z2 v0 -> z2_fun v0
-            | Z3 (v0, v1) -> z3_fun v0 v1
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map
+                ~i0:i0_fun
+                ~i1:i1_fun
+                ~i2:i2_fun
+                ~y1:y1_fun
+                ~y2:y2_fun
+                ~y3:y3_fun
+                ~z1:z1_fun
+                ~z2:z2_fun
+                ~z3:z3_fun
+            = function
+              | I0 -> i0_fun ()
+              | I1 v0 -> i1_fun v0
+              | I2 (v0, v1) -> i2_fun v0 v1
+              | Y1 -> y1_fun ()
+              | Y2 v0 -> y2_fun v0
+              | Y3 (v0, v1) -> y3_fun v0 v1
+              | Z1 -> z1_fun ()
+              | Z2 v0 -> z2_fun v0
+              | Z3 (v0, v1) -> z3_fun v0 v1
+          ;;
+
+          let _ = map
+        end
       end
-    end
 
-    let to_V1_t ~modify_Z1 ~modify_Z2 ~modify_Z3 ~remove_Y3 ~remove_Y2 ~remove_Y1 (v : t)
-      : V1.t
-      =
-      Stable_variant.Helper.map
-        v
-        ~i0:(fun () -> V1.I0)
-        ~i1:(fun v0 -> V1.I1 v0)
-        ~i2:(fun v0 v1 -> V1.I2 (v0, v1))
-        ~y1:remove_Y1
-        ~y2:remove_Y2
-        ~y3:remove_Y3
-        ~z1:modify_Z1
-        ~z2:modify_Z2
-        ~z3:modify_Z3
-    ;;
+      let to_V1_t
+            ~modify_Z1
+            ~modify_Z2
+            ~modify_Z3
+            ~remove_Y3
+            ~remove_Y2
+            ~remove_Y1
+            (v : t)
+        : V1.t
+        =
+        Stable_variant.Helper.map
+          v
+          ~i0:(fun () -> V1.I0)
+          ~i1:(fun v0 -> V1.I1 v0)
+          ~i2:(fun v0 v1 -> V1.I2 (v0, v1))
+          ~y1:remove_Y1
+          ~y2:remove_Y2
+          ~y3:remove_Y3
+          ~z1:modify_Z1
+          ~z2:modify_Z2
+          ~z3:modify_Z3
+      ;;
 
-    let _ = to_V1_t
+      let _ = to_V1_t
 
-    let of_V1_t
-          ~modify_Z1
-          ~modify_Z2
-          ~modify_Z3
-          ~remove_X3
-          ~remove_X2
-          ~remove_X1
-          (v : V1.t)
-      : t
-      =
-      V1.Stable_variant.Helper.map
-        v
-        ~i0:(fun () -> I0)
-        ~i1:(fun v0 -> I1 v0)
-        ~i2:(fun v0 v1 -> I2 (v0, v1))
-        ~x1:remove_X1
-        ~x2:remove_X2
-        ~x3:remove_X3
-        ~z1:modify_Z1
-        ~z2:modify_Z2
-        ~z3:modify_Z3
-    ;;
+      let of_V1_t
+            ~modify_Z1
+            ~modify_Z2
+            ~modify_Z3
+            ~remove_X3
+            ~remove_X2
+            ~remove_X1
+            (v : V1.t)
+        : t
+        =
+        V1.Stable_variant.Helper.map
+          v
+          ~i0:(fun () -> I0)
+          ~i1:(fun v0 -> I1 v0)
+          ~i2:(fun v0 v1 -> I2 (v0, v1))
+          ~x1:remove_X1
+          ~x2:remove_X2
+          ~x3:remove_X3
+          ~z1:modify_Z1
+          ~z2:modify_Z2
+          ~z3:modify_Z3
+      ;;
 
-    let _ = of_V1_t
+      let _ = of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -319,18 +342,22 @@ module Types_not_named_t_and_nested_variant = struct
         | Y
       [@@deriving_inline stable_variant]
 
-      let _ = fun (_ : a) -> ()
+      include struct
+        [@@@ocaml.warning "-60"]
 
-      module Stable_variant_of_a = struct
-        module Helper = struct
-          let map ~x:x_fun ~y:y_fun = function
-            | X v0 -> x_fun v0
-            | Y -> y_fun ()
-          ;;
+        let _ = fun (_ : a) -> ()
 
-          let _ = map
+        module Stable_variant_of_a = struct
+          module Helper = struct
+            let map ~x:x_fun ~y:y_fun = function
+              | X v0 -> x_fun v0
+              | Y -> y_fun ()
+            ;;
+
+            let _ = map
+          end
         end
-      end
+      end [@@ocaml.doc "@inline"]
 
       [@@@end]
     end
@@ -343,30 +370,34 @@ module Types_not_named_t_and_nested_variant = struct
         | Y
       [@@deriving_inline stable_variant ~version:V1.A.a ~modify:[ X ]]
 
-      let _ = fun (_ : b) -> ()
+      include struct
+        [@@@ocaml.warning "-60"]
 
-      module Stable_variant_of_b = struct
-        module Helper = struct
-          let map ~x:x_fun ~y:y_fun = function
-            | X v0 -> x_fun v0
-            | Y -> y_fun ()
-          ;;
+        let _ = fun (_ : b) -> ()
 
-          let _ = map
+        module Stable_variant_of_b = struct
+          module Helper = struct
+            let map ~x:x_fun ~y:y_fun = function
+              | X v0 -> x_fun v0
+              | Y -> y_fun ()
+            ;;
+
+            let _ = map
+          end
         end
-      end
 
-      let b_to_V1_A_a ~modify_X (v : b) : V1.A.a =
-        Stable_variant_of_b.Helper.map v ~x:modify_X ~y:(fun () -> V1.A.Y)
-      ;;
+        let b_to_V1_A_a ~modify_X (v : b) : V1.A.a =
+          Stable_variant_of_b.Helper.map v ~x:modify_X ~y:(fun () -> V1.A.Y)
+        ;;
 
-      let _ = b_to_V1_A_a
+        let _ = b_to_V1_A_a
 
-      let b_of_V1_A_a ~modify_X (v : V1.A.a) : b =
-        V1.A.Stable_variant_of_a.Helper.map v ~x:modify_X ~y:(fun () -> Y)
-      ;;
+        let b_of_V1_A_a ~modify_X (v : V1.A.a) : b =
+          V1.A.Stable_variant_of_a.Helper.map v ~x:modify_X ~y:(fun () -> Y)
+        ;;
 
-      let _ = b_of_V1_A_a
+        let _ = b_of_V1_A_a
+      end [@@ocaml.doc "@inline"]
 
       [@@@end]
     end
@@ -377,17 +408,21 @@ module Nothing_to_convert_variant = struct
   module V1 = struct
     type t = X [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~x:x_fun = function
-          | X -> x_fun ()
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~x:x_fun = function
+            | X -> x_fun ()
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -395,22 +430,26 @@ module Nothing_to_convert_variant = struct
   module V2 = struct
     type t = X [@@deriving_inline stable_variant ~version:V1.t]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~x:x_fun = function
-          | X -> x_fun ()
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~x:x_fun = function
+            | X -> x_fun ()
+          ;;
+
+          let _ = map
+        end
       end
-    end
 
-    let to_V1_t (v : t) : V1.t = Stable_variant.Helper.map v ~x:(fun () -> V1.X)
-    let _ = to_V1_t
-    let of_V1_t (v : V1.t) : t = V1.Stable_variant.Helper.map v ~x:(fun () -> X)
-    let _ = of_V1_t
+      let to_V1_t (v : t) : V1.t = Stable_variant.Helper.map v ~x:(fun () -> V1.X)
+      let _ = to_V1_t
+      let of_V1_t (v : V1.t) : t = V1.Stable_variant.Helper.map v ~x:(fun () -> X)
+      let _ = of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -430,19 +469,23 @@ module Inline_record_generic = struct
           }
     [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~i:i_fun ~x:x_fun ~y:y_fun = function
-          | I { x = v0; y = v1 } -> i_fun ~x:v0 ~y:v1
-          | X { x = v0 } -> x_fun ~x:v0
-          | Y { y = v0; y1 = v1 } -> y_fun ~y:v0 ~y1:v1
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~i:i_fun ~x:x_fun ~y:y_fun = function
+            | I { x = v0; y = v1 } -> i_fun ~x:v0 ~y:v1
+            | X { x = v0 } -> x_fun ~x:v0
+            | Y { y = v0; y1 = v1 } -> y_fun ~y:v0 ~y1:v1
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -461,39 +504,43 @@ module Inline_record_generic = struct
     [@@deriving_inline
       stable_variant ~version:V1.t ~add:[ Y ] ~remove:[ Z ] ~modify:[ X ]]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~i:i_fun ~x:x_fun ~z:z_fun = function
-          | I { x = v0; y = v1 } -> i_fun ~x:v0 ~y:v1
-          | X { x = v0 } -> x_fun ~x:v0
-          | Z { z = v0; z1 = v1 } -> z_fun ~z:v0 ~z1:v1
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~i:i_fun ~x:x_fun ~z:z_fun = function
+            | I { x = v0; y = v1 } -> i_fun ~x:v0 ~y:v1
+            | X { x = v0 } -> x_fun ~x:v0
+            | Z { z = v0; z1 = v1 } -> z_fun ~z:v0 ~z1:v1
+          ;;
+
+          let _ = map
+        end
       end
-    end
 
-    let to_V1_t ~modify_X ~remove_Z (v : t) : V1.t =
-      Stable_variant.Helper.map
-        v
-        ~i:(fun ~x:v0 ~y:v1 -> V1.I { x = v0; y = v1 })
-        ~x:modify_X
-        ~z:remove_Z
-    ;;
+      let to_V1_t ~modify_X ~remove_Z (v : t) : V1.t =
+        Stable_variant.Helper.map
+          v
+          ~i:(fun ~x:v0 ~y:v1 -> V1.I { x = v0; y = v1 })
+          ~x:modify_X
+          ~z:remove_Z
+      ;;
 
-    let _ = to_V1_t
+      let _ = to_V1_t
 
-    let of_V1_t ~modify_X ~remove_Y (v : V1.t) : t =
-      V1.Stable_variant.Helper.map
-        v
-        ~i:(fun ~x:v0 ~y:v1 -> I { x = v0; y = v1 })
-        ~x:modify_X
-        ~y:remove_Y
-    ;;
+      let of_V1_t ~modify_X ~remove_Y (v : V1.t) : t =
+        V1.Stable_variant.Helper.map
+          v
+          ~i:(fun ~x:v0 ~y:v1 -> I { x = v0; y = v1 })
+          ~x:modify_X
+          ~y:remove_Y
+      ;;
 
-    let _ = of_V1_t
+      let _ = of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -503,17 +550,21 @@ module Inline_record_field_name_matches_constructor = struct
   module V1 = struct
     type t = X of { x : float } [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~x:x_fun = function
-          | X { x = v0 } -> x_fun ~x:v0
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~x:x_fun = function
+            | X { x = v0 } -> x_fun ~x:v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -522,22 +573,26 @@ module Inline_record_field_name_matches_constructor = struct
     type t = X of { x : int }
     [@@deriving_inline stable_variant ~version:V1.t ~modify:[ X ]]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~x:x_fun = function
-          | X { x = v0 } -> x_fun ~x:v0
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~x:x_fun = function
+            | X { x = v0 } -> x_fun ~x:v0
+          ;;
+
+          let _ = map
+        end
       end
-    end
 
-    let to_V1_t ~modify_X (v : t) : V1.t = Stable_variant.Helper.map v ~x:modify_X
-    let _ = to_V1_t
-    let of_V1_t ~modify_X (v : V1.t) : t = V1.Stable_variant.Helper.map v ~x:modify_X
-    let _ = of_V1_t
+      let to_V1_t ~modify_X (v : t) : V1.t = Stable_variant.Helper.map v ~x:modify_X
+      let _ = to_V1_t
+      let of_V1_t ~modify_X (v : V1.t) : t = V1.Stable_variant.Helper.map v ~x:modify_X
+      let _ = of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
@@ -550,18 +605,22 @@ module Inline_record_and_tuple = struct
       | Y of int * int
     [@@deriving_inline stable_variant]
 
-    let _ = fun (_ : t) -> ()
+    include struct
+      [@@@ocaml.warning "-60"]
 
-    module Stable_variant = struct
-      module Helper = struct
-        let map ~x:x_fun ~y:y_fun = function
-          | X { x = v0 } -> x_fun ~x:v0
-          | Y (v0, v1) -> y_fun v0 v1
-        ;;
+      let _ = fun (_ : t) -> ()
 
-        let _ = map
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~x:x_fun ~y:y_fun = function
+            | X { x = v0 } -> x_fun ~x:v0
+            | Y (v0, v1) -> y_fun v0 v1
+          ;;
+
+          let _ = map
+        end
       end
-    end
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
