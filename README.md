@@ -237,6 +237,20 @@ end
 let v2_of_v1 : V1.t -> V2.t = V2.of_V1_t ~remove_Mi:(fun i -> V2.Ew i)
 ```
 
+## Parametric types
+
+If your types have parameters, e.g. `'a Foo.t` ocaml you won't be able to write
+
+```
+[@@deriving stable_variant ~version:('a V1.t) ...]
+```
+
+due to ocaml AST shape. We have a special, slightly more verbose syntax for it:
+
+```
+[@@deriving stable_variant ~version:[%stable: ('a V1.t)] ...]
+```
+
 ## Recursive types
 
 If your type is recursive, the invocation of `t` looks like it didn't
