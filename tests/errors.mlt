@@ -47,7 +47,7 @@ end
   {|
 Line _, characters _-_:
 Error: This record expression is expected to have type V1.t
-       The field y does not belong to type V1.t
+       There is no field y within type V1.t
 |}]
 
 (* Intersecting sets of add/remove. *)
@@ -166,8 +166,8 @@ end
 [%%expect
   {|
 Line _, characters _-_:
-Error: This expression has type t but an expression was expected of type
-         y:'a -> 'b
+Error: This expression should not be a constructor, the expected type is
+       y:'a -> 'b
 |}]
 
 (* Intersecting sets of add/remove. *)
