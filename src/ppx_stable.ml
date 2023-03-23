@@ -180,7 +180,8 @@ let convert_record
     | true ->
       [%expr
         let rec [%p pvar ~loc recurse_name] =
-          fun ([%p record_pat] : [%t source_type]) : [%t target_type] -> [%e target_record]
+          fun ([%p record_pat] : [%t source_type]) : [%t target_type] ->
+            [%e target_record]
         in
         [%e evar ~loc recurse_name] _t]
   in
@@ -230,9 +231,7 @@ let generate_stable_variant_module ~td ~loc ~cdl =
             ~record:(fun p -> ppat_record ~loc p Closed)
             ~f:(fun _ x -> pvar ~loc x)
         in
-        let pattern =
-          ppat_construct ~loc (Located.lident ~loc cd.pcd_name.txt) pattern
-        in
+        let pattern = ppat_construct ~loc (Located.lident ~loc cd.pcd_name.txt) pattern in
         let value =
           let fun_expr = evar ~loc (alias_fun_label cd) in
           if List.is_empty args
@@ -590,9 +589,7 @@ let stable_changes =
            | "remove" -> Remove
            | _ -> raise_invalid_change_argument ~loc
          in
-         let value =
-           Ast_pattern.parse (fields_or_constructors ()) loc expression Fn.id
-         in
+         let value = Ast_pattern.parse (fields_or_constructors ()) loc expression Fn.id in
          match Changes_by_type.get acc kind with
          | None -> Changes_by_type.set acc kind (Some value)
          | Some _ -> Location.raise_errorf ~loc "%s argument was passed twice" name)
