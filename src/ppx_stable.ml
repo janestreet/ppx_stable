@@ -181,7 +181,7 @@ let convert_record
       [%expr
         let rec [%p pvar ~loc recurse_name] =
           fun ([%p record_pat] : [%t source_type]) : [%t target_type] ->
-            [%e target_record]
+          [%e target_record]
         in
         [%e evar ~loc recurse_name] _t]
   in
