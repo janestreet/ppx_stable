@@ -1,3 +1,6 @@
+(* Please note this file doesn't use [@@deriving_inline] like all the other tests as
+   [@@deriving_inline] seems to swallow errors. *)
+
 (* Removing unknown field *)
 module Stable = struct
   module V1 = struct

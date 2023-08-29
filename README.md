@@ -65,7 +65,7 @@ end
 
 It supports records with conversion from the _current_ type to the
 previous and from the previous type to the _current_ type. It works
-for potentially-recursive variants and records.
+for potentially-recursive variants, polymorphic variants, and records.
 
 ## Records
 
@@ -300,5 +300,32 @@ end
 module V2 = struct
   type t = { bad : t Container_without_map.t }
   [@@deriving stable_record ~version:V1.t ~modify:[ bad ]
+end
+```
+
+## Polymorphic Variants
+
+Polymorphic variants can be treated identically to normal variants. You can add, modify,
+remove, and rename constructors between polymorphic variants. Support is included for
+parametric and recursive polymorphic variants as well. Two cases are not supported:
+polymorphic variants that inherit from some other type, and polymorphic variants with
+conjuctive/intersection types.
+
+You must derive `stable_variant` for the target type like with normal variants.
+
+### Unsupported Case
+
+You cannot derive `stable_variant` on a type that uses a type alias for some or all of
+its constructors:
+
+```ocaml
+module V1 = struct
+  type t = [ `A ] [@@deriving stable_variant]
+end
+
+module V2 = struct
+  type t =
+    [ V1.t
+    | `B ] (* You cannot derive stable variant on V2.t *)
 end
 ```

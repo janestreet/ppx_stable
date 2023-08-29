@@ -1,0 +1,99 @@
+module Stable = struct
+  module V1 = struct
+    type t = int [@@deriving stable_variant]
+  end
+end
+
+[%%expect {||}]
+
+module Stable = struct
+  module V1 = struct
+    type t = int [@@deriving stable_variant]
+  end
+
+  module V2 = struct
+    type t = int [@@deriving stable_variant ~version:V1.t]
+  end
+end
+
+[%%expect {|
+Line _, characters _-_:
+Error: stable_variant: type int not supported
+|}]
+
+module Stable = struct
+  module V1 = struct
+    type t = int
+  end
+
+  module V2 = struct
+    type t = V1.t [@@deriving stable_record ~version:V1.t]
+  end
+end
+
+[%%expect {|
+Line _, characters _-_:
+Error: stable_record: type V1.t not supported
+|}]
+
+(* Derving stable_variant on a record *)
+module Stable = struct
+  module V1 = struct
+    type t = { a : int } [@@deriving stable_variant]
+  end
+end
+
+[%%expect {|
+Line _, characters _-_:
+Error: stable_variant: missing target version
+|}]
+
+(* Deriving stable_variant on a record with a target version *)
+module Stable = struct
+  module V1 = struct
+    type t = { a : int } [@@deriving stable_variant]
+  end
+
+  module V2 = struct
+    type t =
+      { a : int
+      ; b : string
+      }
+    [@@deriving stable_variant ~version:V1.t ~remove:[ b ]]
+  end
+end
+
+[%%expect {|
+Line _, characters _-_:
+Error: stable_variant: missing target version
+|}]
+
+module Stable = struct
+  module V1 = struct
+    type t =
+      | A
+      | B
+    [@@deriving stable_record]
+  end
+end
+
+[%%expect {||}]
+
+module Stable = struct
+  module V1 = struct
+    type t =
+      | A
+      | B
+    [@@deriving stable_record]
+  end
+
+  module V2 = struct
+    type t =
+      | A
+      | B
+      | C
+    [@@deriving stable_record ~version:V1.t ~remove:[ C ]]
+  end
+end
+
+[%%expect {||}]

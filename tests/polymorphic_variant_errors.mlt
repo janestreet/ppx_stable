@@ -1,0 +1,90 @@
+(* Polymorphic variants with type abbreviations. *)
+module Stable = struct
+  module V1 = struct
+    type t =
+      [ `A of int
+      | `B
+      ]
+  end
+
+  module V2 = struct
+    type t =
+      [ V1.t
+      | `C of string
+      ]
+    [@@deriving stable_variant ~version:V1.t ~remove:[ C ]]
+  end
+end
+
+[%%expect
+  {|
+Line _, characters _-_:
+Error: stable_variant: polymorphic variants extending other variants not yet supported
+|}]
+
+(* Constructor that has "&" constraint
+   See [https://v2.ocaml.org/manual/polyvariant.html] -- Advanced Use section for more
+   information. *)
+module Conjuctive = struct
+  module V1 = struct
+    type t =
+      [ `A of int
+      | `B
+      ]
+    [@@deriving stable_variant]
+  end
+
+  module V2 = struct
+    type t =
+      [< `A of int & string
+      | `B
+      ]
+    [@@deriving stable_variant ~version:V1.t]
+  end
+end
+
+[%%expect
+  {|
+Line _, characters _-_:
+Error: stable_variant: type [< `A of int&string  | `B ] not supported
+|}]
+
+module Conjuctive2 = struct
+  module V1 = struct
+    type t =
+      [ `A of int
+      | `B
+      ]
+    [@@deriving stable_variant]
+  end
+
+  module V2 = struct
+    type t =
+      [ `A of int & string
+      | `B
+      ]
+    [@@deriving stable_variant ~version:V1.t]
+  end
+end
+
+[%%expect
+  {|
+Line _, characters _-_:
+Error: stable_variant: Some polymorphic variants not yet supported. This polymorphic variant has an AST type that this ppx doesn't understand: int & string
+|}]
+
+module Inherit = struct
+  module V1 = struct
+    type t = [] [@@deriving stable_variant]
+  end
+
+  module V2 = struct
+    type t = [ | t ] [@@deriving stable_variant ~version:V1.t]
+  end
+end
+
+[%%expect
+  {|
+Line _, characters _-_:
+Error: stable_variant: polymorphic variants extending other variants not yet supported
+|}]

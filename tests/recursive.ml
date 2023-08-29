@@ -19,6 +19,7 @@ module Stable_container_bad = struct
   type 'a t = { a : 'a }
 end
 
+(* Analogous to [Polymorphic_variant_basic] in [test_polymorphic_variants.ml] *)
 module Variant_basic = struct
   module V1 = struct
     type t =
@@ -150,6 +151,7 @@ module Record_basic = struct
   end
 end
 
+(* Analogous to [Polymorphic_variant_nested] in [test_polymorphic_variants.ml] *)
 module Variant_nested = struct
   module V1 = struct
     type t =
@@ -236,6 +238,7 @@ module Variant_nested = struct
   end
 end
 
+(* Analogous to [Polymorphic_variant_pervasives] in [test_polymorphic_variants.ml] *)
 module Variant_pervasives = struct
   module V1 = struct
     type t =
@@ -593,6 +596,7 @@ module Type_is_recursive_but_upgrade_doesn't_need_rec = struct
   end
 end
 
+(* Analogous to [Polymorphic_variant_with_changes] in [test_polymorphic_variants.ml] *)
 module Variant_with_changes = struct
   module V1 = struct
     type t =

@@ -164,6 +164,7 @@ module Basic_variant = struct
   end
 end
 
+(* Analogous to [Basic_polymorphic_variant2] in [test_polymorphic_variants.ml]. *)
 module Basic_variant2 = struct
   type a
   type b
