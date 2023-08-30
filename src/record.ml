@@ -30,16 +30,16 @@ let set_any_recursive_and_return_expr ~any_recursive (result, expr) =
    are the fields that we expect to get from ~a and ~s arguments.
 *)
 let convert_record
-      ~loc
-      ~fields
-      ~source_fields
-      ~target_fields
-      ~modified_fields
-      ~set_fields
-      ~source_type
-      ~target_type
-      ~rec_flag
-      ~type_name
+  ~loc
+  ~fields
+  ~source_fields
+  ~target_fields
+  ~modified_fields
+  ~set_fields
+  ~source_type
+  ~target_type
+  ~rec_flag
+  ~type_name
   =
   let record_pat =
     let record_pat =
@@ -103,16 +103,16 @@ let convert_record
 ;;
 
 let create_ast_structure_items
-      ~loc
-      ~fields
-      ~add
-      ~remove
-      ~modify
-      ~set
-      ~target_type
-      ~current_type
-      ~rec_flag
-      ~type_name
+  ~loc
+  ~fields
+  ~add
+  ~remove
+  ~modify
+  ~set
+  ~target_type
+  ~current_type
+  ~rec_flag
+  ~type_name
   =
   match target_type with
   | None ->

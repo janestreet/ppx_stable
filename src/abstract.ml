@@ -1,17 +1,17 @@
 open Ppxlib
 
 let create_ast_structure_items
-      ~loc
-      ~add
-      ~modify
-      ~remove
-      ~set
-      ~target_type
-      ~current_type
-      ~rec_flag
-      ~manifest
-      ~type_name
-      ~ppx_name
+  ~loc
+  ~add
+  ~modify
+  ~remove
+  ~set
+  ~target_type
+  ~current_type
+  ~rec_flag
+  ~manifest
+  ~type_name
+  ~ppx_name
   =
   (* Polymorphic variants are abstract ptypes, but so are all of the non-record and
      non-variant types that we don't support. Both cases are handled here.

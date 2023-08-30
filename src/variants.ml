@@ -147,37 +147,37 @@ let generate_stable_variant_module ~loc ~variant_info =
       List.map
         variant_constructors
         ~f:(fun { Constructor.name = constructor_name; args = constructor_arguments } ->
-          let args, pattern =
-            constructor_args_and_pattern_of_args
-              ~constructor_arguments
-              ~loc
-              ~tuple_opt:(ppat_tuple_opt ~loc)
-              ~record:(fun p -> ppat_record ~loc p Closed)
-              ~f:(fun _ x -> pvar ~loc x)
-          in
-          let pattern =
-            match variant_info.is_polymorphic with
-            | `Polymorphic -> ppat_variant ~loc constructor_name pattern
-            | `Not_polymorphic ->
-              ppat_construct ~loc (Located.lident ~loc constructor_name) pattern
-          in
-          let value =
-            let fun_expr = evar ~loc (alias_fun_label constructor_name) in
-            if List.is_empty args
-            then [%expr [%e fun_expr] ()]
-            else
-              List.map args ~f:(fun (lbl, x) -> lbl, evar ~loc x)
-              |> pexp_apply ~loc fun_expr
-          in
-          case ~guard:None ~lhs:pattern ~rhs:value)
+        let args, pattern =
+          constructor_args_and_pattern_of_args
+            ~constructor_arguments
+            ~loc
+            ~tuple_opt:(ppat_tuple_opt ~loc)
+            ~record:(fun p -> ppat_record ~loc p Closed)
+            ~f:(fun _ x -> pvar ~loc x)
+        in
+        let pattern =
+          match variant_info.is_polymorphic with
+          | `Polymorphic -> ppat_variant ~loc constructor_name pattern
+          | `Not_polymorphic ->
+            ppat_construct ~loc (Located.lident ~loc constructor_name) pattern
+        in
+        let value =
+          let fun_expr = evar ~loc (alias_fun_label constructor_name) in
+          if List.is_empty args
+          then [%expr [%e fun_expr] ()]
+          else
+            List.map args ~f:(fun (lbl, x) -> lbl, evar ~loc x)
+            |> pexp_apply ~loc fun_expr
+        in
+        case ~guard:None ~lhs:pattern ~rhs:value)
     in
     let expr =
       List.fold_right
         ~init:(pexp_function ~loc cases)
         variant_constructors
         ~f:(fun { Constructor.name; _ } acc ->
-          let name = String.lowercase name in
-          pexp_fun ~loc (Labelled name) None (pvar ~loc (alias_fun_label name)) acc)
+        let name = String.lowercase name in
+        pexp_fun ~loc (Labelled name) None (pvar ~loc (alias_fun_label name)) acc)
     in
     Ast_helpers.mk_module
       ~loc
@@ -197,14 +197,14 @@ let generate_stable_variant_module ~loc ~variant_info =
 ;;
 
 let convert_variant
-      ~loc
-      ~(variant_info : Info.t)
-      ~source_variants
-      ~target_variants
-      ~modified_variants
-      ~target_type
-      ~source_type
-      ~rec_flag
+  ~loc
+  ~(variant_info : Info.t)
+  ~source_variants
+  ~target_variants
+  ~modified_variants
+  ~target_type
+  ~source_type
+  ~rec_flag
   =
   (* Create pexp_ident scoped to the same module as [which_type]. *)
   let variants_longident ~loc ~which_type path =
@@ -302,15 +302,15 @@ let convert_variant
 ;;
 
 let conversions_of_variant
-      ~loc
-      ~add
-      ~modify
-      ~remove
-      ~set
-      ~target_type
-      ~current_type
-      ~rec_flag
-      ~variant_info
+  ~loc
+  ~add
+  ~modify
+  ~remove
+  ~set
+  ~target_type
+  ~current_type
+  ~rec_flag
+  ~variant_info
   =
   let current_variants = Set.of_list (module String) (Info.names variant_info) in
   Invariants.things_are_known
@@ -353,15 +353,15 @@ let conversions_of_variant
 ;;
 
 let create_ast_structure_items
-      ~loc
-      ~add
-      ~modify
-      ~remove
-      ~set
-      ~target_type
-      ~current_type
-      ~rec_flag
-      ~(variant_info : Info.t)
+  ~loc
+  ~add
+  ~modify
+  ~remove
+  ~set
+  ~target_type
+  ~current_type
+  ~rec_flag
+  ~(variant_info : Info.t)
   =
   let conversions =
     match target_type with

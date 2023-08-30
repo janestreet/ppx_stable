@@ -257,17 +257,17 @@ module Variant_pervasives = struct
       module Stable_variant = struct
         module Helper = struct
           let map
-                ~option:option_fun
-                ~ref:ref_fun
-                ~lazy_t:lazy_t_fun
-                ~array:array_fun
-                ~list:list_fun
+            ~option:option_fun
+            ~ref:ref_fun
+            ~lazy_t:lazy_t_fun
+            ~array:array_fun
+            ~list:list_fun
             = function
-              | Option v0 -> option_fun v0
-              | Ref v0 -> ref_fun v0
-              | Lazy_t v0 -> lazy_t_fun v0
-              | Array v0 -> array_fun v0
-              | List v0 -> list_fun v0
+            | Option v0 -> option_fun v0
+            | Ref v0 -> ref_fun v0
+            | Lazy_t v0 -> lazy_t_fun v0
+            | Array v0 -> array_fun v0
+            | List v0 -> list_fun v0
           ;;
 
           let _ = map
@@ -295,17 +295,17 @@ module Variant_pervasives = struct
       module Stable_variant = struct
         module Helper = struct
           let map
-                ~option:option_fun
-                ~ref:ref_fun
-                ~lazy_t:lazy_t_fun
-                ~array:array_fun
-                ~list:list_fun
+            ~option:option_fun
+            ~ref:ref_fun
+            ~lazy_t:lazy_t_fun
+            ~array:array_fun
+            ~list:list_fun
             = function
-              | Option v0 -> option_fun v0
-              | Ref v0 -> ref_fun v0
-              | Lazy_t v0 -> lazy_t_fun v0
-              | Array v0 -> array_fun v0
-              | List v0 -> list_fun v0
+            | Option v0 -> option_fun v0
+            | Ref v0 -> ref_fun v0
+            | Lazy_t v0 -> lazy_t_fun v0
+            | Array v0 -> array_fun v0
+            | List v0 -> list_fun v0
           ;;
 
           let _ = map
@@ -522,7 +522,7 @@ module Record_with_container_missing_map = struct
         ~version:V1.t
         ~modify:
           [ c_bad
-          (* note that we have to modify c_bad because it doesn't implement a map function *)
+            (* note that we have to modify c_bad because it doesn't implement a map function *)
           ]]
 
     let _ = fun (_ : t) -> ()
@@ -617,12 +617,12 @@ module Variant_with_changes = struct
         module Helper = struct
           let map ~mn:mn_fun ~mr:mr_fun ~kn:kn_fun ~kr:kr_fun ~an:an_fun ~ar:ar_fun
             = function
-              | Mn v0 -> mn_fun v0
-              | Mr v0 -> mr_fun v0
-              | Kn v0 -> kn_fun v0
-              | Kr v0 -> kr_fun v0
-              | An v0 -> an_fun v0
-              | Ar v0 -> ar_fun v0
+            | Mn v0 -> mn_fun v0
+            | Mr v0 -> mr_fun v0
+            | Kn v0 -> kn_fun v0
+            | Kr v0 -> kr_fun v0
+            | An v0 -> an_fun v0
+            | Ar v0 -> ar_fun v0
           ;;
 
           let _ = map
@@ -653,12 +653,12 @@ module Variant_with_changes = struct
         module Helper = struct
           let map ~mn:mn_fun ~mr:mr_fun ~kn:kn_fun ~kr:kr_fun ~rn:rn_fun ~rr:rr_fun
             = function
-              | Mn v0 -> mn_fun v0
-              | Mr (v0, v1) -> mr_fun v0 v1
-              | Kn v0 -> kn_fun v0
-              | Kr v0 -> kr_fun v0
-              | Rn v0 -> rn_fun v0
-              | Rr v0 -> rr_fun v0
+            | Mn v0 -> mn_fun v0
+            | Mr (v0, v1) -> mr_fun v0 v1
+            | Kn v0 -> kn_fun v0
+            | Kr v0 -> kr_fun v0
+            | Rn v0 -> rn_fun v0
+            | Rr v0 -> rr_fun v0
           ;;
 
           let _ = map
@@ -810,14 +810,14 @@ module Deep = struct
                  (lazy
                    (Stdlib.Array.map
                       (fun x ->
-                         Stdlib.List.map
-                           (fun x ->
-                              Stdlib.Option.map
-                                (fun x ->
-                                   let v0, v1 = x in
-                                   recurse v0, Stdlib.List.map (fun x -> recurse x) v1)
-                                x)
-                           x)
+                        Stdlib.List.map
+                          (fun x ->
+                            Stdlib.Option.map
+                              (fun x ->
+                                let v0, v1 = x in
+                                recurse v0, Stdlib.List.map (fun x -> recurse x) v1)
+                              x)
+                          x)
                       (Stdlib.Lazy.force !v0)))))
         in
         recurse
@@ -833,14 +833,14 @@ module Deep = struct
                  (lazy
                    (Stdlib.Array.map
                       (fun x ->
-                         Stdlib.List.map
-                           (fun x ->
-                              Stdlib.Option.map
-                                (fun x ->
-                                   let v0, v1 = x in
-                                   recurse v0, Stdlib.List.map (fun x -> recurse x) v1)
-                                x)
-                           x)
+                        Stdlib.List.map
+                          (fun x ->
+                            Stdlib.Option.map
+                              (fun x ->
+                                let v0, v1 = x in
+                                recurse v0, Stdlib.List.map (fun x -> recurse x) v1)
+                              x)
+                          x)
                       (Stdlib.Lazy.force !v0)))))
         in
         recurse

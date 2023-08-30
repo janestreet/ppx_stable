@@ -138,36 +138,36 @@ let stable_changes =
     Type_declaration
     Ast_pattern.(pstr (pstr_eval (pexp_apply (estring (string "")) __) nil ^:: nil))
     (fun args : _ Changes_by_type.t ->
-       let init = Changes_by_type.create None in
-       List.fold args ~init ~f:(fun acc (label, expression) ->
-         let loc = expression.pexp_loc in
-         let name =
-           match label with
-           | Labelled name -> name
-           | Nolabel | Optional _ -> raise_invalid_change_argument ~loc
-         in
-         let kind : Changes_by_type.kind =
-           match name with
-           | "add" -> Add
-           | "modify" -> Modify
-           | "set" -> Set
-           | "remove" -> Remove
-           | _ -> raise_invalid_change_argument ~loc
-         in
-         let value = Ast_pattern.parse (fields_or_constructors ()) loc expression Fn.id in
-         match Changes_by_type.get acc kind with
-         | None -> Changes_by_type.set acc kind (Some value)
-         | Some _ -> Location.raise_errorf ~loc "%s argument was passed twice" name)
-       |> Changes_by_type.map ~f:(Option.value ~default:[]))
+      let init = Changes_by_type.create None in
+      List.fold args ~init ~f:(fun acc (label, expression) ->
+        let loc = expression.pexp_loc in
+        let name =
+          match label with
+          | Labelled name -> name
+          | Nolabel | Optional _ -> raise_invalid_change_argument ~loc
+        in
+        let kind : Changes_by_type.kind =
+          match name with
+          | "add" -> Add
+          | "modify" -> Modify
+          | "set" -> Set
+          | "remove" -> Remove
+          | _ -> raise_invalid_change_argument ~loc
+        in
+        let value = Ast_pattern.parse (fields_or_constructors ()) loc expression Fn.id in
+        match Changes_by_type.get acc kind with
+        | None -> Changes_by_type.set acc kind (Some value)
+        | Some _ -> Location.raise_errorf ~loc "%s argument was passed twice" name)
+      |> Changes_by_type.map ~f:(Option.value ~default:[]))
 ;;
 
 let make_stable_changes_attribute
-      ~loc
-      ?(add = [])
-      ?(modify = [])
-      ?(set = [])
-      ?(remove = [])
-      ()
+  ~loc
+  ?(add = [])
+  ?(modify = [])
+  ?(set = [])
+  ?(remove = [])
+  ()
   =
   let open (val Ast_builder.make loc) in
   let mkident x =
@@ -208,7 +208,7 @@ let rewrite_type_ext =
     Extension.Context.expression
     Ast_pattern.(ptyp (ptyp_constr __' __))
     (fun ~loc ~path:_ _ _ ->
-       [%expr `Do_not_use_percent_stable_outside_of_deriving_stable])
+      [%expr `Do_not_use_percent_stable_outside_of_deriving_stable])
 ;;
 
 let () = Driver.register_transformation Naming.stable ~extensions:[ rewrite_type_ext ]

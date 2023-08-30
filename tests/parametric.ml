@@ -74,25 +74,25 @@ module Basic_variant = struct
       module Stable_variant = struct
         module Helper = struct
           let map
-                ~i0:i0_fun
-                ~i1:i1_fun
-                ~i2:i2_fun
-                ~x1:x1_fun
-                ~x2:x2_fun
-                ~x3:x3_fun
-                ~z1:z1_fun
-                ~z2:z2_fun
-                ~z3:z3_fun
+            ~i0:i0_fun
+            ~i1:i1_fun
+            ~i2:i2_fun
+            ~x1:x1_fun
+            ~x2:x2_fun
+            ~x3:x3_fun
+            ~z1:z1_fun
+            ~z2:z2_fun
+            ~z3:z3_fun
             = function
-              | I0 -> i0_fun ()
-              | I1 v0 -> i1_fun v0
-              | I2 (v0, v1) -> i2_fun v0 v1
-              | X1 -> x1_fun ()
-              | X2 v0 -> x2_fun v0
-              | X3 (v0, v1) -> x3_fun v0 v1
-              | Z1 (v0, v1) -> z1_fun v0 v1
-              | Z2 v0 -> z2_fun v0
-              | Z3 -> z3_fun ()
+            | I0 -> i0_fun ()
+            | I1 v0 -> i1_fun v0
+            | I2 (v0, v1) -> i2_fun v0 v1
+            | X1 -> x1_fun ()
+            | X2 v0 -> x2_fun v0
+            | X3 (v0, v1) -> x3_fun v0 v1
+            | Z1 (v0, v1) -> z1_fun v0 v1
+            | Z2 v0 -> z2_fun v0
+            | Z3 -> z3_fun ()
           ;;
 
           let _ = map
@@ -129,25 +129,25 @@ module Basic_variant = struct
       module Stable_variant = struct
         module Helper = struct
           let map
-                ~i0:i0_fun
-                ~i1:i1_fun
-                ~i2:i2_fun
-                ~y1:y1_fun
-                ~y2:y2_fun
-                ~y3:y3_fun
-                ~z1:z1_fun
-                ~z2:z2_fun
-                ~z3:z3_fun
+            ~i0:i0_fun
+            ~i1:i1_fun
+            ~i2:i2_fun
+            ~y1:y1_fun
+            ~y2:y2_fun
+            ~y3:y3_fun
+            ~z1:z1_fun
+            ~z2:z2_fun
+            ~z3:z3_fun
             = function
-              | I0 -> i0_fun ()
-              | I1 v0 -> i1_fun v0
-              | I2 (v0, v1) -> i2_fun v0 v1
-              | Y1 -> y1_fun ()
-              | Y2 v0 -> y2_fun v0
-              | Y3 (v0, v1) -> y3_fun v0 v1
-              | Z1 -> z1_fun ()
-              | Z2 v0 -> z2_fun v0
-              | Z3 (v0, v1) -> z3_fun v0 v1
+            | I0 -> i0_fun ()
+            | I1 v0 -> i1_fun v0
+            | I2 (v0, v1) -> i2_fun v0 v1
+            | Y1 -> y1_fun ()
+            | Y2 v0 -> y2_fun v0
+            | Y3 (v0, v1) -> y3_fun v0 v1
+            | Z1 -> z1_fun ()
+            | Z2 v0 -> z2_fun v0
+            | Z3 (v0, v1) -> z3_fun v0 v1
           ;;
 
           let _ = map
@@ -155,13 +155,13 @@ module Basic_variant = struct
       end
 
       let to_V1_t
-            ~modify_Z1
-            ~modify_Z2
-            ~modify_Z3
-            ~remove_Y3
-            ~remove_Y2
-            ~remove_Y1
-            (v : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) t)
+        ~modify_Z1
+        ~modify_Z2
+        ~modify_Z3
+        ~remove_Y3
+        ~remove_Y2
+        ~remove_Y1
+        (v : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) t)
         : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) V1.t
         =
         Stable_variant.Helper.map
@@ -180,13 +180,13 @@ module Basic_variant = struct
       let _ = to_V1_t
 
       let of_V1_t
-            ~modify_Z1
-            ~modify_Z2
-            ~modify_Z3
-            ~remove_X3
-            ~remove_X2
-            ~remove_X1
-            (v : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) V1.t)
+        ~modify_Z1
+        ~modify_Z2
+        ~modify_Z3
+        ~remove_X3
+        ~remove_X2
+        ~remove_X1
+        (v : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) V1.t)
         : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) t
         =
         V1.Stable_variant.Helper.map
