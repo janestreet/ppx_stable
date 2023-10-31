@@ -15,7 +15,7 @@ end
 [%%expect
   {|
 Line _, characters _-_:
-Error: Some fields were supposed to be removed but they were not found: `y'
+Error: Some fields were supposed to be removed but they were not found: 'y'
 |}]
 
 (* Modifying unknown field *)
@@ -32,7 +32,7 @@ end
 [%%expect
   {|
 Line _, characters _-_:
-Error: Some fields were supposed to be modified but they were not found: `y'
+Error: Some fields were supposed to be modified but they were not found: 'y'
 |}]
 
 (* Adding unknown field *)
@@ -67,7 +67,7 @@ end
 [%%expect
   {|
 Line _, characters _-_:
-Error: Sets `add' and `remove' must be disjoint but they are not: `f' found in both
+Error: Sets 'add' and 'remove' must be disjoint but they are not: 'f' found in both. Consider ~modify or ~set
 |}]
 
 (* Intersecting sets of modify/set. *)
@@ -84,7 +84,7 @@ end
 [%%expect
   {|
 Line _, characters _-_:
-Error: Sets `modify' and `set' must be disjoint but they are not: `x' found in both
+Error: Sets 'modify' and 'set' must be disjoint but they are not: 'x' found in both
 |}]
 
 (* Wrong casing *)
@@ -101,7 +101,7 @@ end
 [%%expect
   {|
 Line _, characters _-_:
-Error: Some fields were supposed to be removed but they were not found: `Y'
+Error: Some fields were supposed to be removed but they were not found: 'Y'
 |}]
 
 (* omitted [~version] argument *)
@@ -135,7 +135,7 @@ end
 [%%expect
   {|
 Line _, characters _-_:
-Error: Some variants were supposed to be removed but they were not found: `Y'
+Error: Some variants were supposed to be removed but they were not found: 'Y'
 |}]
 
 (* Modifying unknown variant *)
@@ -152,7 +152,7 @@ end
 [%%expect
   {|
 Line _, characters _-_:
-Error: Some variants were supposed to be modified but they were not found: `Y'
+Error: Some variants were supposed to be modified but they were not found: 'Y'
 |}]
 
 (* Adding unknown variant *)
@@ -187,7 +187,7 @@ end
 [%%expect
   {|
 Line _, characters _-_:
-Error: Sets `add' and `remove' must be disjoint but they are not: `F' found in both
+Error: Sets 'add' and 'remove' must be disjoint but they are not: 'F' found in both. Consider ~modify or ~set
 |}]
 
 (* Wrong casing *)
@@ -204,7 +204,7 @@ end
 [%%expect
   {|
 Line _, characters _-_:
-Error: Some variants were supposed to be removed but they were not found: `y'
+Error: Some variants were supposed to be removed but they were not found: 'y'
 |}]
 
 module Missing_type_argument_on_record = struct

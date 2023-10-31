@@ -4,27 +4,28 @@ open Ppxlib
 let set_to_string set =
   set
   |> Set.to_list
-  |> List.map ~f:(fun field_name -> Printf.sprintf "`%s'" field_name)
+  |> List.map ~f:(fun field_name -> Printf.sprintf "'%s'" field_name)
   |> String.concat ~sep:", "
 ;;
 
 let all_disjoints ~loc ~add ~remove ~modify ~set =
-  let check (n1, s1) (n2, s2) =
+  let check ?suggestion (n1, s1) (n2, s2) =
     let common = Set.inter s1 s2 in
     if not (Set.is_empty common)
     then
       Location.raise_errorf
         ~loc
-        "Sets `%s' and `%s' must be disjoint but they are not: %s found in both"
+        "Sets '%s' and '%s' must be disjoint but they are not: %s found in both%s"
         n1
         n2
         (set_to_string common)
+        (Option.value_map suggestion ~default:"" ~f:(fun suggestion -> ". " ^ suggestion))
   in
   let a = "add", add in
   let b = "remove", remove in
   let c = "modify", modify in
   let d = "set", set in
-  check a b;
+  check a b ~suggestion:"Consider ~modify or ~set";
   check a c;
   check a d;
   check b c;
