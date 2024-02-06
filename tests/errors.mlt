@@ -116,7 +116,8 @@ module Stable = struct
   end
 end
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
 Error: stable_record: missing target version
 |}]
@@ -259,7 +260,8 @@ module Mixing_stable_record_and_variant = struct
   end
 end
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
 Error: stable_variant: missing target version
 |}]
@@ -279,7 +281,8 @@ module Recursiveness_requires_map = struct
   end
 end
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
 Error: Unbound value Container_with_no_map.map
 |}]

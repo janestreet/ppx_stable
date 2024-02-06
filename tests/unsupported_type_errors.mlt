@@ -16,7 +16,8 @@ module Stable = struct
   end
 end
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
 Error: stable_variant: type int not supported
 |}]
@@ -31,7 +32,8 @@ module Stable = struct
   end
 end
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
 Error: stable_record: type V1.t not supported
 |}]
@@ -43,7 +45,8 @@ module Stable = struct
   end
 end
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
 Error: stable_variant: missing target version
 |}]
@@ -63,7 +66,8 @@ module Stable = struct
   end
 end
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
 Error: stable_variant: missing target version
 |}]
