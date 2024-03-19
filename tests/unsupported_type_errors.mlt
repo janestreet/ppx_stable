@@ -4,7 +4,7 @@ module Stable = struct
   end
 end
 
-[%%expect {||}]
+[%%expect {| |}]
 
 module Stable = struct
   module V1 = struct
@@ -81,7 +81,7 @@ module Stable = struct
   end
 end
 
-[%%expect {||}]
+[%%expect {| |}]
 
 module Stable = struct
   module V1 = struct
@@ -100,4 +100,4 @@ module Stable = struct
   end
 end
 
-[%%expect {||}]
+[%%expect {| |}]
