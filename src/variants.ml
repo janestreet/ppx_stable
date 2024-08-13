@@ -63,7 +63,8 @@ module Info = struct
           let args =
             Pcstr_tuple
               (match t.ptyp_desc with
-               | Ptyp_tuple core_type_list -> core_type_list
+               | Ptyp_tuple args ->
+                 List.map args ~f:Ppxlib_jane.Shim.Pcstr_tuple_arg.of_core_type
                | Ptyp_any
                | Ptyp_var _
                | Ptyp_arrow _
@@ -74,7 +75,7 @@ module Info = struct
                | Ptyp_variant _
                | Ptyp_poly _
                | Ptyp_package _
-               | Ptyp_extension _ -> [ t ])
+               | Ptyp_extension _ -> [ Ppxlib_jane.Shim.Pcstr_tuple_arg.of_core_type t ])
           in
           { Constructor.name; args }
         | Rtag (_, _, args) ->
@@ -120,9 +121,10 @@ let stable_variants ~type_ =
 let constructor_args_and_pattern_of_args ~loc ~tuple_opt ~record ~f ~constructor_arguments
   =
   match constructor_arguments with
-  | Pcstr_tuple tys ->
+  | Pcstr_tuple args ->
     let args, pats =
-      List.mapi tys ~f:(fun i ty ->
+      List.mapi args ~f:(fun i arg ->
+        let ty = Ppxlib_jane.Shim.Pcstr_tuple_arg.to_core_type arg in
         let var = "v" ^ Int.to_string i in
         (Nolabel, var), f ty var)
       |> List.unzip
@@ -147,37 +149,37 @@ let generate_stable_variant_module ~loc ~variant_info =
       List.map
         variant_constructors
         ~f:(fun { Constructor.name = constructor_name; args = constructor_arguments } ->
-        let args, pattern =
-          constructor_args_and_pattern_of_args
-            ~constructor_arguments
-            ~loc
-            ~tuple_opt:(ppat_tuple_opt ~loc)
-            ~record:(fun p -> ppat_record ~loc p Closed)
-            ~f:(fun _ x -> pvar ~loc x)
-        in
-        let pattern =
-          match variant_info.is_polymorphic with
-          | `Polymorphic -> ppat_variant ~loc constructor_name pattern
-          | `Not_polymorphic ->
-            ppat_construct ~loc (Located.lident ~loc constructor_name) pattern
-        in
-        let value =
-          let fun_expr = evar ~loc (alias_fun_label constructor_name) in
-          if List.is_empty args
-          then [%expr [%e fun_expr] ()]
-          else
-            List.map args ~f:(fun (lbl, x) -> lbl, evar ~loc x)
-            |> pexp_apply ~loc fun_expr
-        in
-        case ~guard:None ~lhs:pattern ~rhs:value)
+          let args, pattern =
+            constructor_args_and_pattern_of_args
+              ~constructor_arguments
+              ~loc
+              ~tuple_opt:(ppat_tuple_opt ~loc)
+              ~record:(fun p -> ppat_record ~loc p Closed)
+              ~f:(fun _ x -> pvar ~loc x)
+          in
+          let pattern =
+            match variant_info.is_polymorphic with
+            | `Polymorphic -> ppat_variant ~loc constructor_name pattern
+            | `Not_polymorphic ->
+              ppat_construct ~loc (Located.lident ~loc constructor_name) pattern
+          in
+          let value =
+            let fun_expr = evar ~loc (alias_fun_label constructor_name) in
+            if List.is_empty args
+            then [%expr [%e fun_expr] ()]
+            else
+              List.map args ~f:(fun (lbl, x) -> lbl, evar ~loc x)
+              |> pexp_apply ~loc fun_expr
+          in
+          case ~guard:None ~lhs:pattern ~rhs:value)
     in
     let expr =
       List.fold_right
         ~init:(pexp_function ~loc cases)
         variant_constructors
         ~f:(fun { Constructor.name; _ } acc ->
-        let name = String.lowercase name in
-        pexp_fun ~loc (Labelled name) None (pvar ~loc (alias_fun_label name)) acc)
+          let name = String.lowercase name in
+          pexp_fun ~loc (Labelled name) None (pvar ~loc (alias_fun_label name)) acc)
     in
     Ast_helpers.mk_module
       ~loc
