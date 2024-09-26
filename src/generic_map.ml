@@ -3,9 +3,10 @@ open Ppxlib
 open Ast_builder.Default
 
 module Pervasive = struct
-  (* this list comes from lib/typerep_lib/lib/type_generic.mli *)
+  (* this list comes from lib/typerep_lib/lib/type_generic.mli, plus [Iarray]. *)
   type t =
     | Array
+    | Iarray
     | Lazy
     | List
     | Option
@@ -13,6 +14,7 @@ module Pervasive = struct
 
   let of_string = function
     | "array" -> Some Array
+    | "iarray" -> Some Iarray
     | "lazy_t" -> Some Lazy
     | "list" -> Some List
     | "option" -> Some Option
@@ -45,6 +47,7 @@ let rec apply ~loc ~map t expr =
      | List -> [%expr Stdlib.List.map [%e apply_fn ~loc ~map t] [%e expr]]
      | Ref -> [%expr ref [%e apply ~loc ~map t [%expr ![%e expr]]]]
      | Array -> [%expr Stdlib.Array.map [%e apply_fn ~loc ~map t] [%e expr]]
+     | Iarray -> [%expr Iarray.map ~f:[%e apply_fn ~loc ~map t] [%e expr]]
      | Lazy -> [%expr lazy [%e apply ~loc ~map t [%expr Stdlib.Lazy.force [%e expr]]]])
   | Constr_t (longident, ts) ->
     let map_fn = pexp_ident ~loc (Located.mk ~loc (Ldot (longident, "map"))) in

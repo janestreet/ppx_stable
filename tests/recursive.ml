@@ -246,6 +246,7 @@ module Variant_pervasives = struct
       | Ref of t ref
       | Lazy_t of t lazy_t
       | Array of t array
+      | Iarray of t iarray
       | List of t list
     [@@deriving_inline stable_variant]
 
@@ -261,12 +262,14 @@ module Variant_pervasives = struct
             ~ref:ref_fun
             ~lazy_t:lazy_t_fun
             ~array:array_fun
+            ~iarray:iarray_fun
             ~list:list_fun
             = function
             | Option v0 -> option_fun v0
             | Ref v0 -> ref_fun v0
             | Lazy_t v0 -> lazy_t_fun v0
             | Array v0 -> array_fun v0
+            | Iarray v0 -> iarray_fun v0
             | List v0 -> list_fun v0
           ;;
 
@@ -284,6 +287,7 @@ module Variant_pervasives = struct
       | Ref of t ref
       | Lazy_t of t lazy_t
       | Array of t array
+      | Iarray of t iarray
       | List of t list
     [@@deriving_inline stable_variant ~version:V1.t]
 
@@ -299,12 +303,14 @@ module Variant_pervasives = struct
             ~ref:ref_fun
             ~lazy_t:lazy_t_fun
             ~array:array_fun
+            ~iarray:iarray_fun
             ~list:list_fun
             = function
             | Option v0 -> option_fun v0
             | Ref v0 -> ref_fun v0
             | Lazy_t v0 -> lazy_t_fun v0
             | Array v0 -> array_fun v0
+            | Iarray v0 -> iarray_fun v0
             | List v0 -> list_fun v0
           ;;
 
@@ -317,6 +323,7 @@ module Variant_pervasives = struct
           Stable_variant.Helper.map
             v
             ~array:(fun v0 -> V1.Array (Stdlib.Array.map (fun x -> recurse x) v0))
+            ~iarray:(fun v0 -> V1.Iarray (Iarray.map ~f:(fun x -> recurse x) v0))
             ~lazy_t:(fun v0 -> V1.Lazy_t (lazy (recurse (Stdlib.Lazy.force v0))))
             ~list:(fun v0 -> V1.List (Stdlib.List.map (fun x -> recurse x) v0))
             ~option:(fun v0 -> V1.Option (Stdlib.Option.map (fun x -> recurse x) v0))
@@ -332,6 +339,7 @@ module Variant_pervasives = struct
           V1.Stable_variant.Helper.map
             v
             ~array:(fun v0 -> Array (Stdlib.Array.map (fun x -> recurse x) v0))
+            ~iarray:(fun v0 -> Iarray (Iarray.map ~f:(fun x -> recurse x) v0))
             ~lazy_t:(fun v0 -> Lazy_t (lazy (recurse (Stdlib.Lazy.force v0))))
             ~list:(fun v0 -> List (Stdlib.List.map (fun x -> recurse x) v0))
             ~option:(fun v0 -> Option (Stdlib.Option.map (fun x -> recurse x) v0))
@@ -354,6 +362,7 @@ module Record_pervasives = struct
       ; ref_ : t ref
       ; lazy_ : t lazy_t
       ; array : t array
+      ; iarray : t iarray
       ; list : t list
       }
   end
@@ -364,6 +373,7 @@ module Record_pervasives = struct
       ; ref_ : t ref
       ; lazy_ : t lazy_t
       ; array : t array
+      ; iarray : t iarray
       ; list : t list
       }
     [@@deriving_inline stable_record ~version:V1.t]
@@ -371,8 +381,9 @@ module Record_pervasives = struct
     let _ = fun (_ : t) -> ()
 
     let to_V1_t (_t : t) =
-      let rec recurse ({ array; lazy_; list; option; ref_ } : t) : V1.t =
+      let rec recurse ({ array; iarray; lazy_; list; option; ref_ } : t) : V1.t =
         { array = Stdlib.Array.map (fun x -> recurse x) array
+        ; iarray = Iarray.map ~f:(fun x -> recurse x) iarray
         ; lazy_ = lazy (recurse (Stdlib.Lazy.force lazy_))
         ; list = Stdlib.List.map (fun x -> recurse x) list
         ; option = Stdlib.Option.map (fun x -> recurse x) option
@@ -385,8 +396,9 @@ module Record_pervasives = struct
     let _ = to_V1_t
 
     let of_V1_t (_t : V1.t) =
-      let rec recurse ({ array; lazy_; list; option; ref_ } : V1.t) : t =
+      let rec recurse ({ array; iarray; lazy_; list; option; ref_ } : V1.t) : t =
         { array = Stdlib.Array.map (fun x -> recurse x) array
+        ; iarray = Iarray.map ~f:(fun x -> recurse x) iarray
         ; lazy_ = lazy (recurse (Stdlib.Lazy.force lazy_))
         ; list = Stdlib.List.map (fun x -> recurse x) list
         ; option = Stdlib.Option.map (fun x -> recurse x) option
@@ -761,7 +773,7 @@ end
 
 module Deep = struct
   module V1 = struct
-    type t = F of (t * t list) option list array lazy_t ref
+    type t = F of (t * t list) option list array iarray lazy_t ref
     [@@deriving_inline stable_variant]
 
     include struct
@@ -784,7 +796,7 @@ module Deep = struct
   end
 
   module V2 = struct
-    type t = F of (t * t list) option list array lazy_t ref
+    type t = F of (t * t list) option list array iarray lazy_t ref
     [@@deriving_inline stable_variant ~version:V1.t]
 
     include struct
@@ -808,14 +820,17 @@ module Deep = struct
             V1.F
               (ref
                  (lazy
-                   (Stdlib.Array.map
-                      (fun x ->
-                        Stdlib.List.map
+                   (Iarray.map
+                      ~f:(fun x ->
+                        Stdlib.Array.map
                           (fun x ->
-                            Stdlib.Option.map
+                            Stdlib.List.map
                               (fun x ->
-                                let v0, v1 = x in
-                                recurse v0, Stdlib.List.map (fun x -> recurse x) v1)
+                                Stdlib.Option.map
+                                  (fun x ->
+                                    let v0, v1 = x in
+                                    recurse v0, Stdlib.List.map (fun x -> recurse x) v1)
+                                  x)
                               x)
                           x)
                       (Stdlib.Lazy.force !v0)))))
@@ -831,14 +846,17 @@ module Deep = struct
             F
               (ref
                  (lazy
-                   (Stdlib.Array.map
-                      (fun x ->
-                        Stdlib.List.map
+                   (Iarray.map
+                      ~f:(fun x ->
+                        Stdlib.Array.map
                           (fun x ->
-                            Stdlib.Option.map
+                            Stdlib.List.map
                               (fun x ->
-                                let v0, v1 = x in
-                                recurse v0, Stdlib.List.map (fun x -> recurse x) v1)
+                                Stdlib.Option.map
+                                  (fun x ->
+                                    let v0, v1 = x in
+                                    recurse v0, Stdlib.List.map (fun x -> recurse x) v1)
+                                  x)
                               x)
                           x)
                       (Stdlib.Lazy.force !v0)))))

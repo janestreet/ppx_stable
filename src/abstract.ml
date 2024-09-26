@@ -22,7 +22,7 @@ let create_ast_structure_items
   match manifest with
   | None -> Location.raise_errorf ~loc "%s: abstract types not supported" ppx_name
   | Some manifest ->
-    (match manifest.ptyp_desc with
+    (match Ppxlib_jane.Shim.Core_type_desc.of_parsetree manifest.ptyp_desc with
      | Ptyp_variant (row_fields, Closed, None) ->
        let variant_info =
          Variants.Info.of_row_fields ~ppx_name ~loc ~type_name row_fields
@@ -41,6 +41,7 @@ let create_ast_structure_items
      | Ptyp_var _
      | Ptyp_arrow _
      | Ptyp_tuple _
+     | Ptyp_unboxed_tuple _
      | Ptyp_constr _
      | Ptyp_object _
      | Ptyp_class _

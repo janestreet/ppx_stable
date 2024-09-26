@@ -1,5 +1,5 @@
 (library
  (name ppx_stable_test)
- (libraries base)
+ (libraries base iarray)
  (preprocess
   (pps ppx_jane)))

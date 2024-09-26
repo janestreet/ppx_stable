@@ -62,12 +62,13 @@ module Info = struct
           let name = loc_and_name.txt in
           let args =
             Pcstr_tuple
-              (match t.ptyp_desc with
+              (match Ppxlib_jane.Shim.Core_type_desc.of_parsetree t.ptyp_desc with
                | Ptyp_tuple args ->
                  List.map args ~f:Ppxlib_jane.Shim.Pcstr_tuple_arg.of_core_type
                | Ptyp_any
                | Ptyp_var _
                | Ptyp_arrow _
+               | Ptyp_unboxed_tuple _
                | Ptyp_constr _
                | Ptyp_object _
                | Ptyp_class _
