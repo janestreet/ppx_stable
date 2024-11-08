@@ -37,18 +37,7 @@ let create_ast_structure_items
          ~current_type
          ~rec_flag
          ~variant_info
-     | Ptyp_any
-     | Ptyp_var _
-     | Ptyp_arrow _
-     | Ptyp_tuple _
-     | Ptyp_constr _
-     | Ptyp_object _
-     | Ptyp_class _
-     | Ptyp_alias _
-     | Ptyp_variant _
-     | Ptyp_poly _
-     | Ptyp_package _
-     | Ptyp_extension _ ->
+     | _ ->
        (match target_type with
         | None -> []
         | Some _ ->
