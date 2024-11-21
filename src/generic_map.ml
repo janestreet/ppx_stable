@@ -81,7 +81,7 @@ let rec find_targets ~target ~loc core_type =
     let recs = List.map tys ~f:(find_targets ~target ~loc) in
     if List.exists recs ~f:needs_mapping then f recs else None
   in
-  match core_type.ptyp_desc with
+  match Ppxlib_jane.Shim.Core_type_desc.of_parsetree core_type.ptyp_desc with
   | Ptyp_constr (lid_loc, args) ->
     (match lid_loc.txt with
      | Lapply _ -> Location.raise_errorf ~loc "Unexpected Lapply"
@@ -101,7 +101,10 @@ let rec find_targets ~target ~loc core_type =
               | true -> Constr_pervasive (kind, t))))
      | Ldot (l, "t") -> list args ~f:(fun recs -> Constr_t (l, recs))
      | Ldot _ -> None)
-  | Ptyp_tuple args -> list args ~f:(fun x -> Tuple x)
+  | Ptyp_tuple labeled_args ->
+    (match Ppxlib_jane.as_unlabeled_tuple labeled_args with
+     | Some args -> list args ~f:(fun x -> Tuple x)
+     | None -> None)
   | _ -> None
 ;;
 
