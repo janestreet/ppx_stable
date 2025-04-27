@@ -1,4 +1,4 @@
-(** A test to maintain ppx_stable generated type signatures between variants and 
+(** A test to maintain ppx_stable generated type signatures between variants and
     polymorphic variants *)
 open Base
 

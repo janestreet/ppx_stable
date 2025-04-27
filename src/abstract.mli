@@ -1,5 +1,5 @@
-(** Error logic for abstract types and code-gen for polymorphic variants.
-    Creates [to_] and [of_] functions, as well as [Stable_variant.Helper...] *)
+(** Error logic for abstract types and code-gen for polymorphic variants. Creates [to_]
+    and [of_] functions, as well as [Stable_variant.Helper...] *)
 
 open Base
 open Ppxlib

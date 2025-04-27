@@ -56,7 +56,7 @@ let conversions_of_td ~ppx_name ~target_type ~rec_flag changes td =
       (List.map ~f:fst td.ptype_params)
   in
   let structures =
-    match td.ptype_kind with
+    match Ppxlib_jane.Shim.Type_kind.of_parsetree td.ptype_kind with
     | Ptype_open -> Location.raise_errorf ~loc "%s: open types not supported" ppx_name
     | Ptype_record lds ->
       (match target_type with
@@ -73,6 +73,8 @@ let conversions_of_td ~ppx_name ~target_type ~rec_flag changes td =
            ~current_type
            ~rec_flag
            ~type_name:td.ptype_name.txt)
+    | Ptype_record_unboxed_product _ ->
+      Location.raise_errorf ~loc "%s: unboxed_record types not supported" ppx_name
     | Ptype_variant cdl ->
       let variant_info = Variants.Info.of_cdl cdl ~type_name:td.ptype_name.txt in
       Variants.create_ast_structure_items
