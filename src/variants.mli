@@ -1,5 +1,5 @@
-(** Code-gen for both variants and polymorphic variants.
-    Creates [to_] and [of_] functions, as well as [Stable_variant.Helper...] *)
+(** Code-gen for both variants and polymorphic variants. Creates [to_] and [of_]
+    functions, as well as [Stable_variant.Helper...] *)
 
 open Base
 open Ppxlib

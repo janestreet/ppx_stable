@@ -11,8 +11,7 @@ open Ppxlib
     [n] replaced by [r_n].
 
     This module constructs a function that maps values of type [tau] to values of type
-    [tau']
-*)
+    [tau'] *)
 
 type replace_result =
   | Unchanged

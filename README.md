@@ -70,6 +70,7 @@ for potentially-recursive variants, polymorphic variants, and records.
 ## Records
 
 It supports all the possible ways you can change a record:
+
 - adding new fields
 - modifying existing fields, i.e. changing its type
 - removing some fields
