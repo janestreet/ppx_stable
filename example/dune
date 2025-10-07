@@ -5,5 +5,5 @@
   (pps ppx_stable)))
 
 (alias
- (name DEFAULT)
+ (name default)
  (deps test.ml.pp))
