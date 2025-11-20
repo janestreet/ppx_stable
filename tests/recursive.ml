@@ -1,4 +1,4 @@
-(* Some helpers that subscribe to the Core.Stable_module_types  *)
+(* Some helpers that subscribe to the Core.Stable_module_types *)
 
 module Stable_container1 = struct
   type 'a t = { value : 'a }
@@ -534,7 +534,8 @@ module Record_with_container_missing_map = struct
         ~version:V1.t
         ~modify:
           [ c_bad
-            (* note that we have to modify c_bad because it doesn't implement a map function *)
+            (* note that we have to modify c_bad because it doesn't implement a map
+               function *)
           ]]
 
     let _ = fun (_ : t) -> ()

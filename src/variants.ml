@@ -49,7 +49,7 @@ module Info = struct
           let name = loc_and_name.txt in
           let args = Pcstr_tuple [] in
           { Constructor.name; args }
-        (* In normal variants, arguments to a constructor "| A (int * bool)" are
+        (*=In normal variants, arguments to a constructor "| A (int * bool)" are
            stored in a "Pcstr_tuple core_type_list". For polymorphic variants,
            arguments are stored in a core_type_list, because there are more
            type possibilities. "|`A of int & bool" has arguments [int; bool].
