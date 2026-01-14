@@ -47,7 +47,7 @@ let rec apply ~loc ~map t expr =
      | List -> [%expr Stdlib.List.map [%e apply_fn ~loc ~map t] [%e expr]]
      | Ref -> [%expr ref [%e apply ~loc ~map t [%expr ![%e expr]]]]
      | Array -> [%expr Stdlib.Array.map [%e apply_fn ~loc ~map t] [%e expr]]
-     | Iarray -> [%expr Iarray.map ~f:[%e apply_fn ~loc ~map t] [%e expr]]
+     | Iarray -> [%expr Base.Iarray.map ~f:[%e apply_fn ~loc ~map t] [%e expr]]
      | Lazy -> [%expr lazy [%e apply ~loc ~map t [%expr Stdlib.Lazy.force [%e expr]]]])
   | Constr_t (longident, ts) ->
     let map_fn = pexp_ident ~loc (Located.mk ~loc (Ldot (longident, "map"))) in

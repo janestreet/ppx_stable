@@ -723,7 +723,7 @@ module Polymorphic_variant_pervasives = struct
           Stable_variant.Helper.map
             v
             ~array:(fun v0 -> `Array (Stdlib.Array.map (fun x -> recurse x) v0))
-            ~iarray:(fun v0 -> `Iarray (Iarray.map ~f:(fun x -> recurse x) v0))
+            ~iarray:(fun v0 -> `Iarray (Base.Iarray.map ~f:(fun x -> recurse x) v0))
             ~lazy_t:(fun v0 -> `Lazy_t (lazy (recurse (Stdlib.Lazy.force v0))))
             ~list:(fun v0 -> `List (Stdlib.List.map (fun x -> recurse x) v0))
             ~option:(fun v0 -> `Option (Stdlib.Option.map (fun x -> recurse x) v0))
@@ -739,7 +739,7 @@ module Polymorphic_variant_pervasives = struct
           V1.Stable_variant.Helper.map
             v
             ~array:(fun v0 -> `Array (Stdlib.Array.map (fun x -> recurse x) v0))
-            ~iarray:(fun v0 -> `Iarray (Iarray.map ~f:(fun x -> recurse x) v0))
+            ~iarray:(fun v0 -> `Iarray (Base.Iarray.map ~f:(fun x -> recurse x) v0))
             ~lazy_t:(fun v0 -> `Lazy_t (lazy (recurse (Stdlib.Lazy.force v0))))
             ~list:(fun v0 -> `List (Stdlib.List.map (fun x -> recurse x) v0))
             ~option:(fun v0 -> `Option (Stdlib.Option.map (fun x -> recurse x) v0))
