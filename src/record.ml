@@ -25,9 +25,8 @@ let set_any_recursive_and_return_expr ~any_recursive (result, expr) =
    - set:[ s ] = value is going to come from ~s argument
    - modify:[ m ] = value is going to come from ~modify_m argument
 
-   In particular:
-   fields_from_args = set + (target - source) = set + (add - remove)
-   are the fields that we expect to get from ~a and ~s arguments.
+   In particular: fields_from_args = set + (target - source) = set + (add - remove) are
+   the fields that we expect to get from ~a and ~s arguments.
 *)
 let convert_record
   ~loc

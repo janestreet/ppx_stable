@@ -1,4 +1,4 @@
-(* Some helpers that subscribe to the Core.Stable_module_types  *)
+(* Some helpers that subscribe to the Core.Stable_module_types *)
 
 module Stable_container1 = struct
   type 'a t = { value : 'a }
@@ -323,7 +323,7 @@ module Variant_pervasives = struct
           Stable_variant.Helper.map
             v
             ~array:(fun v0 -> V1.Array (Stdlib.Array.map (fun x -> recurse x) v0))
-            ~iarray:(fun v0 -> V1.Iarray (Iarray.map ~f:(fun x -> recurse x) v0))
+            ~iarray:(fun v0 -> V1.Iarray (Base.Iarray.map ~f:(fun x -> recurse x) v0))
             ~lazy_t:(fun v0 -> V1.Lazy_t (lazy (recurse (Stdlib.Lazy.force v0))))
             ~list:(fun v0 -> V1.List (Stdlib.List.map (fun x -> recurse x) v0))
             ~option:(fun v0 -> V1.Option (Stdlib.Option.map (fun x -> recurse x) v0))
@@ -339,7 +339,7 @@ module Variant_pervasives = struct
           V1.Stable_variant.Helper.map
             v
             ~array:(fun v0 -> Array (Stdlib.Array.map (fun x -> recurse x) v0))
-            ~iarray:(fun v0 -> Iarray (Iarray.map ~f:(fun x -> recurse x) v0))
+            ~iarray:(fun v0 -> Iarray (Base.Iarray.map ~f:(fun x -> recurse x) v0))
             ~lazy_t:(fun v0 -> Lazy_t (lazy (recurse (Stdlib.Lazy.force v0))))
             ~list:(fun v0 -> List (Stdlib.List.map (fun x -> recurse x) v0))
             ~option:(fun v0 -> Option (Stdlib.Option.map (fun x -> recurse x) v0))
@@ -383,7 +383,7 @@ module Record_pervasives = struct
     let to_V1_t (_t : t) =
       let rec recurse ({ array; iarray; lazy_; list; option; ref_ } : t) : V1.t =
         { array = Stdlib.Array.map (fun x -> recurse x) array
-        ; iarray = Iarray.map ~f:(fun x -> recurse x) iarray
+        ; iarray = Base.Iarray.map ~f:(fun x -> recurse x) iarray
         ; lazy_ = lazy (recurse (Stdlib.Lazy.force lazy_))
         ; list = Stdlib.List.map (fun x -> recurse x) list
         ; option = Stdlib.Option.map (fun x -> recurse x) option
@@ -398,7 +398,7 @@ module Record_pervasives = struct
     let of_V1_t (_t : V1.t) =
       let rec recurse ({ array; iarray; lazy_; list; option; ref_ } : V1.t) : t =
         { array = Stdlib.Array.map (fun x -> recurse x) array
-        ; iarray = Iarray.map ~f:(fun x -> recurse x) iarray
+        ; iarray = Base.Iarray.map ~f:(fun x -> recurse x) iarray
         ; lazy_ = lazy (recurse (Stdlib.Lazy.force lazy_))
         ; list = Stdlib.List.map (fun x -> recurse x) list
         ; option = Stdlib.Option.map (fun x -> recurse x) option
@@ -534,7 +534,8 @@ module Record_with_container_missing_map = struct
         ~version:V1.t
         ~modify:
           [ c_bad
-            (* note that we have to modify c_bad because it doesn't implement a map function *)
+            (* note that we have to modify c_bad because it doesn't implement a map
+               function *)
           ]]
 
     let _ = fun (_ : t) -> ()
@@ -820,7 +821,7 @@ module Deep = struct
             V1.F
               (ref
                  (lazy
-                   (Iarray.map
+                   (Base.Iarray.map
                       ~f:(fun x ->
                         Stdlib.Array.map
                           (fun x ->
@@ -846,7 +847,7 @@ module Deep = struct
             F
               (ref
                  (lazy
-                   (Iarray.map
+                   (Base.Iarray.map
                       ~f:(fun x ->
                         Stdlib.Array.map
                           (fun x ->

@@ -22,9 +22,8 @@ Line _, characters _-_:
 Error: stable_variant: polymorphic variants extending other variants not yet supported
 |}]
 
-(* Constructor that has "&" constraint
-   See [https://v2.ocaml.org/manual/polyvariant.html] -- Advanced Use section for more
-   information. *)
+(* Constructor that has "&" constraint See [https://v2.ocaml.org/manual/polyvariant.html]
+   -- Advanced Use section for more information. *)
 module Conjuctive = struct
   module V1 = struct
     type t =

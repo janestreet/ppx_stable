@@ -1,9 +1,9 @@
-(******************************************************************************)
-(*                                                                            *)
-(* First we duplicate some of the examples from test.mlt, but changing their  *)
-(* use of fresh abstract types for type parameters.                           *)
-(*                                                                            *)
-(******************************************************************************)
+(******************************************************************************
+ *
+ * First we duplicate some of the examples from test.mlt, but changing their
+ * use of fresh abstract types for type parameters.
+ *
+ ******************************************************************************)
 
 module Basic_record = struct
   module V1 = struct
@@ -209,15 +209,15 @@ module Basic_variant = struct
   end
 end
 
-(******************************************************************************)
-(*                                                                            *)
-(* Now we add some more interesting examples                                  *)
-(*                                                                            *)
-(******************************************************************************)
+(******************************************************************************
+ *
+ * Now we add some more interesting examples
+ *
+ ******************************************************************************)
 
-(******************)
-(* First: records *)
-(******************)
+(******************
+ * First: records
+ ******************)
 
 module Add_type_parameter_record = struct
   module V1 = struct
@@ -281,9 +281,9 @@ module Change_type_parameter_record = struct
   end
 end
 
-(******************)
-(* Then: variants *)
-(******************)
+(******************
+ * Then: variants
+ ******************)
 
 (* Analogous to [Add_type_parameter_polymorphic_variant] in [test_polymorphic_variants.ml]
 *)
