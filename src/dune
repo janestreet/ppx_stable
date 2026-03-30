@@ -2,7 +2,8 @@
  (name ppx_stable)
  (public_name ppx_stable)
  (kind ppx_deriver)
- (libraries base compiler-libs.common ppxlib ppxlib_jane)
+ (libraries base compiler-libs.common ppx_template.expander ppxlib
+   ppxlib_jane)
  (ppx_runtime_libraries base)
  (preprocess
   (pps ppxlib.metaquot)))

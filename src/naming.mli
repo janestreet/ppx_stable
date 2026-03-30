@@ -20,6 +20,7 @@ val modify : string
 val set : string
 val remove : string
 val version : string
+val stackify : string
 
 (** {2 OCaml constructs this ppx defines} *)
 

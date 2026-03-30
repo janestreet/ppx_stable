@@ -16,4 +16,5 @@ val create_ast_structure_items
   -> manifest:core_type option
   -> type_name:string
   -> ppx_name:string
+  -> stackify:bool
   -> structure_item list
