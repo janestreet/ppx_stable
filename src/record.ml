@@ -37,6 +37,7 @@ let convert_record
   ~set_fields
   ~source_type
   ~target_type
+  ~stackify
   ~rec_flag
   ~type_name
   =
@@ -89,6 +90,9 @@ let convert_record
         [%e evar ~loc Naming.recurse] _t]
   in
   let acc =
+    if stackify then [%expr [%e acc] [@exclave_if_stack ppx_stable_alloc]] else acc
+  in
+  let acc =
     Set.fold fields_from_args ~init:acc ~f:(fun acc name ->
       Ast_helpers.mk_pexp_fun ~loc ~name acc)
   in
@@ -112,6 +116,7 @@ let create_ast_structure_items
   ~current_type
   ~rec_flag
   ~type_name
+  ~stackify
   =
   match target_type with
   | None ->
@@ -142,11 +147,13 @@ let create_ast_structure_items
       ~all:current_fields
       set;
     let other_fields = Set.diff (Set.union current_fields add) remove in
-    let to_target_name =
+    let to_target_pat =
       Naming.conversion_function ~dir:`To ~source:type_name ~target:target_type
+      |> pvar ~loc
     in
-    let of_target_name =
+    let of_target_pat =
       Naming.conversion_function ~dir:`Of ~source:type_name ~target:target_type
+      |> pvar ~loc
     in
     let to_target =
       convert_record
@@ -158,6 +165,7 @@ let create_ast_structure_items
         ~set_fields:set
         ~target_type
         ~source_type:current_type
+        ~stackify
         ~rec_flag
         ~type_name
     in
@@ -171,10 +179,25 @@ let create_ast_structure_items
         ~set_fields:set
         ~target_type:current_type
         ~source_type:target_type
+        ~stackify
         ~rec_flag
         ~type_name
     in
-    [ [%stri let [%p pvar ~loc to_target_name] = [%e to_target]]
-    ; [%stri let [%p pvar ~loc of_target_name] = [%e of_target]]
-    ]
+    if not stackify
+    then
+      [%str
+        let [%p to_target_pat] = [%e to_target]
+        let [%p of_target_pat] = [%e of_target]]
+    else
+      [%str
+        [%%template
+        [@@@alloc.default ppx_stable_alloc = (heap, stack)]
+
+        let [%p to_target_pat] = [%e to_target]
+        let [%p of_target_pat] = [%e of_target]]]
+      |> (* We need to expand things here so that the ppxlib produces the [let _ = ...]
+            blocks for all the functions to prevent unused warnings.
+         *)
+      Ppx_template_expander.Monomorphize.t#structure
+        Ppx_template_expander.Monomorphize.Context.top
 ;;

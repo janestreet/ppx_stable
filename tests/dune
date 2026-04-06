@@ -2,4 +2,4 @@
  (name ppx_stable_test)
  (libraries base iarray)
  (preprocess
-  (pps ppx_jane)))
+  (pps ppx_jane -compare-require-explicit-locality)))

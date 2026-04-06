@@ -935,3 +935,166 @@ module T_and_s = struct
     [@@@end]
   end
 end
+
+module Variant_basic_stackify = struct
+  module V1 = struct
+    type t =
+      | A
+      | B of t
+      | C of t * t
+      | D of
+          { a : t
+          ; b : t
+          }
+    [@@deriving_inline stable_variant]
+
+    include struct
+      [@@@ocaml.warning "-60"]
+
+      let _ = fun (_ : t) -> ()
+
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~a:a_fun ~b:b_fun ~c:c_fun ~d:d_fun = function
+            | A -> a_fun ()
+            | B v0 -> b_fun v0
+            | C (v0, v1) -> c_fun v0 v1
+            | D { a = v0; b = v1 } -> d_fun ~a:v0 ~b:v1
+          ;;
+
+          let _ = map
+        end
+      end
+    end [@@ocaml.doc "@inline"]
+
+    [@@@end]
+  end
+
+  module V2 = struct
+    type t =
+      | A
+      | B of t
+      | C of t * t
+      | D of
+          { a : t
+          ; b : t
+          }
+    [@@deriving_inline stable_variant ~version:V1.t ~stackify ~modify:[ B; C; D ]]
+
+    include struct
+      [@@@ocaml.warning "-60"]
+
+      let _ = fun (_ : t) -> ()
+
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~a:a_fun ~b:b_fun ~c:c_fun ~d:d_fun = function
+            | A -> a_fun ()
+            | B v0 -> b_fun v0
+            | C (v0, v1) -> c_fun v0 v1
+            | D { a = v0; b = v1 } -> d_fun ~a:v0 ~b:v1
+          ;;
+
+          let _ = map
+        end
+      end
+
+      [%%template
+      let to_V1_t ~modify_B ~modify_C ~modify_D (v : t) : V1.t =
+        Stable_variant.Helper.map
+          v
+          ~a:(fun () -> V1.A)
+          ~b:modify_B
+          ~c:modify_C
+          ~d:modify_D
+      ;;
+
+      let _ = to_V1_t
+
+      let of_V1_t ~modify_B ~modify_C ~modify_D (v : V1.t) : t =
+        V1.Stable_variant.Helper.map
+          v
+          ~a:(fun () -> A)
+          ~b:modify_B
+          ~c:modify_C
+          ~d:modify_D
+      ;;
+
+      let _ = of_V1_t
+
+      let to_V1_t__stack ~modify_B ~modify_C ~modify_D (v : t) : V1.t = exclave_
+        Stable_variant.Helper.map
+          v
+          ~a:(fun () -> V1.A)
+          ~b:modify_B
+          ~c:modify_C
+          ~d:modify_D
+      ;;
+
+      let _ = to_V1_t__stack
+
+      let of_V1_t__stack ~modify_B ~modify_C ~modify_D (v : V1.t) : t = exclave_
+        V1.Stable_variant.Helper.map
+          v
+          ~a:(fun () -> A)
+          ~b:modify_B
+          ~c:modify_C
+          ~d:modify_D
+      ;;
+
+      let _ = of_V1_t__stack]
+    end [@@ocaml.doc "@inline"]
+
+    [@@@end]
+  end
+end
+
+module Record_basic_stackify = struct
+  module V1 = struct
+    type t =
+      { a : unit
+      ; b : t
+      }
+  end
+
+  module V2 = struct
+    type t =
+      { a : unit
+      ; b : t
+      }
+    [@@deriving_inline stable_record ~version:V1.t ~stackify]
+
+    let _ = fun (_ : t) -> ()
+
+    [%%template
+    let to_V1_t (_t : t) =
+      let rec recurse ({ a; b } : t) : V1.t = { a; b = recurse b } in
+      recurse _t
+    ;;
+
+    let _ = to_V1_t
+
+    let of_V1_t (_t : V1.t) =
+      let rec recurse ({ a; b } : V1.t) : t = { a; b = recurse b } in
+      recurse _t
+    ;;
+
+    let _ = of_V1_t
+
+    let to_V1_t__stack (_t : t) = exclave_
+      let rec recurse ({ a; b } : t) : V1.t = { a; b = recurse b } in
+      recurse _t
+    ;;
+
+    let _ = to_V1_t__stack
+
+    let of_V1_t__stack (_t : V1.t) = exclave_
+      let rec recurse ({ a; b } : V1.t) : t = { a; b = recurse b } in
+      recurse _t
+    ;;
+
+    let _ = of_V1_t__stack]
+
+    [@@@end]
+  end
+end

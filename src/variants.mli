@@ -27,4 +27,5 @@ val create_ast_structure_items
   -> current_type:core_type
   -> rec_flag:rec_flag
   -> variant_info:Info.t
+  -> stackify:bool
   -> structure_item list

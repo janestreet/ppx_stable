@@ -41,7 +41,7 @@ module Changes_by_type = struct
   let to_list t = [ t.add; t.modify; t.set; t.remove ]
 end
 
-let conversions_of_td ~ppx_name ~target_type ~rec_flag changes td =
+let conversions_of_td ~ppx_name ~target_type ~rec_flag ~stackify changes td =
   let ({ add; modify; set; remove } : _ Changes_by_type.t) = changes in
   let loc = td.ptype_loc in
   let add = Set.of_list (module String) add in
@@ -72,7 +72,8 @@ let conversions_of_td ~ppx_name ~target_type ~rec_flag changes td =
            ~target_type
            ~current_type
            ~rec_flag
-           ~type_name:td.ptype_name.txt)
+           ~type_name:td.ptype_name.txt
+           ~stackify)
     | Ptype_record_unboxed_product _ ->
       Location.raise_errorf ~loc "%s: unboxed_record types not supported" ppx_name
     | Ptype_variant cdl ->
@@ -87,6 +88,7 @@ let conversions_of_td ~ppx_name ~target_type ~rec_flag changes td =
         ~current_type
         ~rec_flag
         ~variant_info
+        ~stackify
     | Ptype_abstract ->
       Abstract.create_ast_structure_items
         ~loc
@@ -100,6 +102,7 @@ let conversions_of_td ~ppx_name ~target_type ~rec_flag changes td =
         ~manifest:td.ptype_manifest
         ~type_name:td.ptype_name.txt
         ~ppx_name
+        ~stackify
   in
   structures
 ;;
@@ -200,7 +203,8 @@ let args =
     +> arg Naming.add changes
     +> arg Naming.modify changes
     +> arg Naming.set changes
-    +> arg Naming.remove changes)
+    +> arg Naming.remove changes
+    +> flag Naming.stackify)
 ;;
 
 (* That's actually useless, it's just here so ppxlib's driver doesn't complain *)
@@ -215,7 +219,7 @@ let rewrite_type_ext =
 
 let () = Driver.register_transformation Naming.stable ~extensions:[ rewrite_type_ext ]
 
-let gen ppx_name ~loc ~path:_ (rec_flag, tds) target_type add modify set remove =
+let gen ppx_name ~loc ~path:_ (rec_flag, tds) target_type add modify set remove stackify =
   match tds with
   | [ td ] ->
     let changes_from_args : _ Changes_by_type.t = { add; modify; set; remove } in
@@ -239,7 +243,7 @@ let gen ppx_name ~loc ~path:_ (rec_flag, tds) target_type add modify set remove 
       | None ->
         Changes_by_type.map changes_from_args ~f:(Option.value_map ~f:snd ~default:[])
     in
-    conversions_of_td ~ppx_name ~rec_flag ~target_type changes td
+    conversions_of_td ~ppx_name ~rec_flag ~target_type ~stackify changes td
   | _ ->
     Location.raise_errorf
       ~loc

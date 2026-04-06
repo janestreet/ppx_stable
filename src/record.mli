@@ -14,4 +14,5 @@ val create_ast_structure_items
   -> current_type:core_type
   -> rec_flag:rec_flag
   -> type_name:label
+  -> stackify:bool
   -> structure_item list

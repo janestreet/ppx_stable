@@ -33,14 +33,14 @@ module Basic_record = struct
     let _ = fun (_ : ('a, 'b, 'c, 'd) t) -> ()
 
     let to_V1_t (_t : ('a, 'b, 'c, 'd) t) ~modify_c ~d ~b1 =
-      let ({ a; b2 = _; c; d = _ } : ('a, 'b, 'c, 'd) t) = _t in
+      let { a; b2 = _; c; d = _ } : ('a, 'b, 'c, 'd) t = _t in
       ({ a; b1; c = modify_c c; d } : ('a, 'b, 'c, 'd) V1.t)
     ;;
 
     let _ = to_V1_t
 
     let of_V1_t (_t : ('a, 'b, 'c, 'd) V1.t) ~modify_c ~d ~b2 =
-      let ({ a; b1 = _; c; d = _ } : ('a, 'b, 'c, 'd) V1.t) = _t in
+      let { a; b1 = _; c; d = _ } : ('a, 'b, 'c, 'd) V1.t = _t in
       ({ a; b2; c = modify_c c; d } : ('a, 'b, 'c, 'd) t)
     ;;
 
@@ -234,14 +234,14 @@ module Add_type_parameter_record = struct
     let _ = fun (_ : 'a t) -> ()
 
     let to_V1_t (_t : 'a t) =
-      let ({ stuff = _; value } : 'a t) = _t in
+      let { stuff = _; value } : 'a t = _t in
       ({ value } : V1.t)
     ;;
 
     let _ = to_V1_t
 
     let of_V1_t (_t : V1.t) ~stuff =
-      let ({ value } : V1.t) = _t in
+      let { value } : V1.t = _t in
       ({ stuff; value } : 'a t)
     ;;
 
@@ -264,14 +264,14 @@ module Change_type_parameter_record = struct
     let _ = fun (_ : ('a, 'b) t) -> ()
 
     let to_V1_t (_t : ('a, 'b) t) ~lst =
-      let ({ pair_lst = _ } : ('a, 'b) t) = _t in
+      let { pair_lst = _ } : ('a, 'b) t = _t in
       ({ lst } : 'a V1.t)
     ;;
 
     let _ = to_V1_t
 
     let of_V1_t (_t : 'a V1.t) ~pair_lst =
-      let ({ lst = _ } : 'a V1.t) = _t in
+      let { lst = _ } : 'a V1.t = _t in
       ({ pair_lst } : ('a, 'b) t)
     ;;
 
@@ -426,14 +426,14 @@ module Change_type_parameter_variations = struct
     let _ = fun (_ : 'b t) -> ()
 
     let to_V1_t (_t : 'b t) ~modify_foo =
-      let ({ foo } : 'b t) = _t in
+      let { foo } : 'b t = _t in
       ({ foo = modify_foo foo } : 'x V1.t)
     ;;
 
     let _ = to_V1_t
 
     let of_V1_t (_t : 'x V1.t) ~modify_foo =
-      let ({ foo } : 'x V1.t) = _t in
+      let { foo } : 'x V1.t = _t in
       ({ foo = modify_foo foo } : 'b t)
     ;;
 
@@ -449,14 +449,14 @@ module Change_type_parameter_variations = struct
     let _ = fun (_ : 'b t) -> ()
 
     let to_V1_t (_t : 'b t) ~modify_foo =
-      let ({ foo } : 'b t) = _t in
+      let { foo } : 'b t = _t in
       ({ foo = modify_foo foo } : 'b V1.t)
     ;;
 
     let _ = to_V1_t
 
     let of_V1_t (_t : 'b V1.t) ~modify_foo =
-      let ({ foo } : 'b V1.t) = _t in
+      let { foo } : 'b V1.t = _t in
       ({ foo = modify_foo foo } : 'b t)
     ;;
 
@@ -472,14 +472,14 @@ module Change_type_parameter_variations = struct
     let _ = fun (_ : 'b t) -> ()
 
     let to_V1_t (_t : 'b t) ~modify_foo =
-      let ({ foo } : 'b t) = _t in
+      let { foo } : 'b t = _t in
       ({ foo = modify_foo foo } : _ V1.t)
     ;;
 
     let _ = to_V1_t
 
     let of_V1_t (_t : _ V1.t) ~modify_foo =
-      let ({ foo } : _ V1.t) = _t in
+      let { foo } : _ V1.t = _t in
       ({ foo = modify_foo foo } : 'b t)
     ;;
 
@@ -496,18 +496,290 @@ module Change_type_parameter_variations = struct
     let _ = fun (_ : 'b t) -> ()
 
     let to_V1_t (_t : 'b t) ~modify_foo =
-      let ({ foo } : 'b t) = _t in
+      let { foo } : 'b t = _t in
       ({ foo = modify_foo foo } : (int * string) V1.t)
     ;;
 
     let _ = to_V1_t
 
     let of_V1_t (_t : (int * string) V1.t) ~modify_foo =
-      let ({ foo } : (int * string) V1.t) = _t in
+      let { foo } : (int * string) V1.t = _t in
       ({ foo = modify_foo foo } : 'b t)
     ;;
 
     let _ = of_V1_t
+
+    [@@@end]
+  end
+end
+
+(* Same as [Basic_record] but with stackify *)
+module Basic_record_stackify = struct
+  module V1 = struct
+    type ('a, 'b, 'c, 'd) t =
+      { a : 'a
+      ; b1 : 'b
+      ; c : 'c
+      ; d : 'd
+      }
+  end
+
+  module V2 = struct
+    type ('a, 'b, 'c, 'd) t =
+      { a : 'a
+      ; b2 : 'b
+      ; c : 'c
+      ; d : 'd * 'a
+      }
+    [@@deriving_inline
+      stable_record
+        ~version:[%stable: ('a, 'b, 'c, 'd) V1.t]
+        ~add:[ b1 ]
+        ~remove:[ b2 ]
+        ~modify:[ c ]
+        ~set:[ d ]
+        ~stackify]
+
+    let _ = fun (_ : ('a, 'b, 'c, 'd) t) -> ()
+
+    [%%template
+    let to_V1_t (_t : ('a, 'b, 'c, 'd) t) ~modify_c ~d ~b1 =
+      let { a; b2 = _; c; d = _ } : ('a, 'b, 'c, 'd) t = _t in
+      ({ a; b1; c = modify_c c; d } : ('a, 'b, 'c, 'd) V1.t)
+    ;;
+
+    let _ = to_V1_t
+
+    let of_V1_t (_t : ('a, 'b, 'c, 'd) V1.t) ~modify_c ~d ~b2 =
+      let { a; b1 = _; c; d = _ } : ('a, 'b, 'c, 'd) V1.t = _t in
+      ({ a; b2; c = modify_c c; d } : ('a, 'b, 'c, 'd) t)
+    ;;
+
+    let _ = of_V1_t
+
+    let to_V1_t__stack (_t : ('a, 'b, 'c, 'd) t) ~modify_c ~d ~b1 = exclave_
+      let { a; b2 = _; c; d = _ } : ('a, 'b, 'c, 'd) t = _t in
+      ({ a; b1; c = modify_c c; d } : ('a, 'b, 'c, 'd) V1.t)
+    ;;
+
+    let _ = to_V1_t__stack
+
+    let of_V1_t__stack (_t : ('a, 'b, 'c, 'd) V1.t) ~modify_c ~d ~b2 = exclave_
+      let { a; b1 = _; c; d = _ } : ('a, 'b, 'c, 'd) V1.t = _t in
+      ({ a; b2; c = modify_c c; d } : ('a, 'b, 'c, 'd) t)
+    ;;
+
+    let _ = of_V1_t__stack]
+
+    [@@@end]
+  end
+end
+
+(* Same as [Basic_variant] but with stackify *)
+module Basic_variant_stackify = struct
+  module V1 = struct
+    type ('a, 'b, 'c, 'd, 'e, 'f, 'j, 'k, 'l) t =
+      | I0
+      | I1 of 'a
+      | I2 of 'b * 'c
+      | X1
+      | X2 of 'j
+      | X3 of 'k * 'l
+      | Z1 of 'd * 'e
+      | Z2 of 'f
+      | Z3
+    [@@deriving_inline stable_variant]
+
+    include struct
+      [@@@ocaml.warning "-60"]
+
+      let _ = fun (_ : ('a, 'b, 'c, 'd, 'e, 'f, 'j, 'k, 'l) t) -> ()
+
+      module Stable_variant = struct
+        module Helper = struct
+          let map
+            ~i0:i0_fun
+            ~i1:i1_fun
+            ~i2:i2_fun
+            ~x1:x1_fun
+            ~x2:x2_fun
+            ~x3:x3_fun
+            ~z1:z1_fun
+            ~z2:z2_fun
+            ~z3:z3_fun
+            = function
+            | I0 -> i0_fun ()
+            | I1 v0 -> i1_fun v0
+            | I2 (v0, v1) -> i2_fun v0 v1
+            | X1 -> x1_fun ()
+            | X2 v0 -> x2_fun v0
+            | X3 (v0, v1) -> x3_fun v0 v1
+            | Z1 (v0, v1) -> z1_fun v0 v1
+            | Z2 v0 -> z2_fun v0
+            | Z3 -> z3_fun ()
+          ;;
+
+          let _ = map
+        end
+      end
+    end [@@ocaml.doc "@inline"]
+
+    [@@@end]
+  end
+
+  module V2 = struct
+    type ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) t =
+      | I0
+      | I1 of 'a
+      | I2 of 'b * 'c
+      | Y1
+      | Y2 of 'g
+      | Y3 of 'h * 'i
+      | Z1
+      | Z2 of 'f
+      | Z3 of 'd * 'e
+    [@@deriving_inline
+      stable_variant
+        ~version:[%stable: ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) V1.t]
+        ~remove:[ Y1; Y2; Y3 ]
+        ~add:[ X1; X2; X3 ]
+        ~modify:[ Z1; Z2; Z3 ]
+        ~stackify]
+
+    include struct
+      [@@@ocaml.warning "-60"]
+
+      let _ = fun (_ : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) t) -> ()
+
+      module Stable_variant = struct
+        module Helper = struct
+          let map
+            ~i0:i0_fun
+            ~i1:i1_fun
+            ~i2:i2_fun
+            ~y1:y1_fun
+            ~y2:y2_fun
+            ~y3:y3_fun
+            ~z1:z1_fun
+            ~z2:z2_fun
+            ~z3:z3_fun
+            = function
+            | I0 -> i0_fun ()
+            | I1 v0 -> i1_fun v0
+            | I2 (v0, v1) -> i2_fun v0 v1
+            | Y1 -> y1_fun ()
+            | Y2 v0 -> y2_fun v0
+            | Y3 (v0, v1) -> y3_fun v0 v1
+            | Z1 -> z1_fun ()
+            | Z2 v0 -> z2_fun v0
+            | Z3 (v0, v1) -> z3_fun v0 v1
+          ;;
+
+          let _ = map
+        end
+      end
+
+      [%%template
+      let to_V1_t
+        ~modify_Z1
+        ~modify_Z2
+        ~modify_Z3
+        ~remove_Y3
+        ~remove_Y2
+        ~remove_Y1
+        (v : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) t)
+        : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) V1.t
+        =
+        Stable_variant.Helper.map
+          v
+          ~i0:(fun () -> V1.I0)
+          ~i1:(fun v0 -> V1.I1 v0)
+          ~i2:(fun v0 v1 -> V1.I2 (v0, v1))
+          ~y1:remove_Y1
+          ~y2:remove_Y2
+          ~y3:remove_Y3
+          ~z1:modify_Z1
+          ~z2:modify_Z2
+          ~z3:modify_Z3
+      ;;
+
+      let _ = to_V1_t
+
+      let of_V1_t
+        ~modify_Z1
+        ~modify_Z2
+        ~modify_Z3
+        ~remove_X3
+        ~remove_X2
+        ~remove_X1
+        (v : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) V1.t)
+        : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) t
+        =
+        V1.Stable_variant.Helper.map
+          v
+          ~i0:(fun () -> I0)
+          ~i1:(fun v0 -> I1 v0)
+          ~i2:(fun v0 v1 -> I2 (v0, v1))
+          ~x1:remove_X1
+          ~x2:remove_X2
+          ~x3:remove_X3
+          ~z1:modify_Z1
+          ~z2:modify_Z2
+          ~z3:modify_Z3
+      ;;
+
+      let _ = of_V1_t
+
+      let to_V1_t__stack
+        ~modify_Z1
+        ~modify_Z2
+        ~modify_Z3
+        ~remove_Y3
+        ~remove_Y2
+        ~remove_Y1
+        (v : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) t)
+        : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) V1.t
+        = exclave_
+        Stable_variant.Helper.map
+          v
+          ~i0:(fun () -> V1.I0)
+          ~i1:(fun v0 -> V1.I1 v0)
+          ~i2:(fun v0 v1 -> V1.I2 (v0, v1))
+          ~y1:remove_Y1
+          ~y2:remove_Y2
+          ~y3:remove_Y3
+          ~z1:modify_Z1
+          ~z2:modify_Z2
+          ~z3:modify_Z3
+      ;;
+
+      let _ = to_V1_t__stack
+
+      let of_V1_t__stack
+        ~modify_Z1
+        ~modify_Z2
+        ~modify_Z3
+        ~remove_X3
+        ~remove_X2
+        ~remove_X1
+        (v : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) V1.t)
+        : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) t
+        = exclave_
+        V1.Stable_variant.Helper.map
+          v
+          ~i0:(fun () -> I0)
+          ~i1:(fun v0 -> I1 v0)
+          ~i2:(fun v0 v1 -> I2 (v0, v1))
+          ~x1:remove_X1
+          ~x2:remove_X2
+          ~x3:remove_X3
+          ~z1:modify_Z1
+          ~z2:modify_Z2
+          ~z3:modify_Z3
+      ;;
+
+      let _ = of_V1_t__stack]
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end

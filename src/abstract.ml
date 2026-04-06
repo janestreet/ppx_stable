@@ -12,6 +12,7 @@ let create_ast_structure_items
   ~manifest
   ~type_name
   ~ppx_name
+  ~stackify
   =
   (* Polymorphic variants are abstract ptypes, but so are all of the non-record and
      non-variant types that we don't support. Both cases are handled here.
@@ -37,6 +38,7 @@ let create_ast_structure_items
          ~current_type
          ~rec_flag
          ~variant_info
+         ~stackify
      | _ ->
        (match target_type with
         | None -> []

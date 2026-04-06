@@ -200,6 +200,7 @@ let convert_variant
   ~target_type
   ~source_type
   ~rec_flag
+  ~stackify
   =
   (* Create pexp_ident scoped to the same module as [which_type]. *)
   let variants_longident ~loc ~which_type path =
@@ -273,6 +274,9 @@ let convert_variant
       in
       pexp_apply ~loc acc [ Labelled (String.lowercase name), f ])
   in
+  let rhs =
+    if stackify then [%expr [%e rhs] [@exclave_if_stack ppx_stable_alloc]] else rhs
+  in
   let acc =
     match !any_recursive with
     | false -> [%expr fun (v : [%t source_type]) : [%t target_type] -> [%e rhs]]
@@ -306,6 +310,7 @@ let conversions_of_variant
   ~current_type
   ~rec_flag
   ~variant_info
+  ~stackify
   =
   let current_variants = Set.of_list (module String) (Info.names variant_info) in
   Invariants.things_are_known
@@ -332,6 +337,7 @@ let conversions_of_variant
       ~target_type
       ~source_type:current_type
       ~rec_flag
+      ~stackify
   in
   let of_target =
     convert_variant
@@ -343,6 +349,7 @@ let conversions_of_variant
       ~target_type:current_type
       ~source_type:target_type
       ~rec_flag
+      ~stackify
   in
   to_target, of_target
 ;;
@@ -357,22 +364,25 @@ let create_ast_structure_items
   ~current_type
   ~rec_flag
   ~(variant_info : Info.t)
+  ~stackify
   =
   let conversions =
     match target_type with
     | None -> []
     | Some target_type ->
-      let to_target_name =
+      let to_target_pat =
         Naming.conversion_function
           ~dir:`To
           ~source:variant_info.type_name
           ~target:target_type
+        |> pvar ~loc
       in
-      let of_target_name =
+      let of_target_pat =
         Naming.conversion_function
           ~dir:`Of
           ~source:variant_info.type_name
           ~target:target_type
+        |> pvar ~loc
       in
       let to_target, of_target =
         conversions_of_variant
@@ -385,10 +395,23 @@ let create_ast_structure_items
           ~current_type
           ~rec_flag
           ~variant_info
+          ~stackify
       in
-      [ [%stri let [%p pvar ~loc to_target_name] = [%e to_target]]
-      ; [%stri let [%p pvar ~loc of_target_name] = [%e of_target]]
-      ]
+      if not stackify
+      then
+        [%str
+          let [%p to_target_pat] = [%e to_target]
+          let [%p of_target_pat] = [%e of_target]]
+      else
+        [%str
+          [%%template
+          [@@@alloc.default ppx_stable_alloc = (heap, stack)]
+
+          let [%p to_target_pat] = [%e to_target]
+          let [%p of_target_pat] = [%e of_target]]]
+        (* See comment in [record.ml] *)
+        |> Ppx_template_expander.Monomorphize.t#structure
+             Ppx_template_expander.Monomorphize.Context.top
   in
   let helper_module = generate_stable_variant_module ~loc ~variant_info in
   helper_module @ conversions
