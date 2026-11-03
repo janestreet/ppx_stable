@@ -1,11 +1,11 @@
-open Base
+open Ppx_helpers.Base_lite
 open Ppxlib
 open Ast_builder.Default
 
 let create_type_name_map ~loc ~rec_flag ~type_name =
   match rec_flag with
-  | Recursive -> Map.singleton (module String) type_name (evar ~loc Naming.recurse)
-  | Nonrecursive -> Map.empty (module String)
+  | Recursive -> String.Map.singleton type_name (evar ~loc Naming.recurse)
+  | Nonrecursive -> String.Map.empty
 ;;
 
 (* we only need to mark the function recursive if we made any recursive calls. the type
@@ -43,31 +43,33 @@ let convert_record
   =
   let record_pat =
     let record_pat =
-      List.map (Set.to_list source_fields) ~f:(fun name ->
-        if Set.mem target_fields name && not (Set.mem set_fields name)
+      List.map (String.Set.to_list source_fields) ~f:(fun name ->
+        if String.Set.mem target_fields name && not (String.Set.mem set_fields name)
         then Ast_helpers.mk_lident ~loc name, ppat_var ~loc (Located.mk ~loc name)
         else Ast_helpers.mk_lident ~loc name, ppat_any ~loc)
     in
     ppat_record ~loc record_pat Closed
   in
-  let fields_from_args = Set.union set_fields (Set.diff target_fields source_fields) in
+  let fields_from_args =
+    String.Set.union set_fields (String.Set.diff target_fields source_fields)
+  in
   let any_recursive = ref false in
   let fields =
-    Map.of_alist_exn (module String) (List.map fields ~f:(fun ld -> ld.pld_name.txt, ld))
+    String.Map.of_alist_exn (List.map fields ~f:(fun ld -> ld.pld_name.txt, ld))
   in
   let map_if_recursive = create_type_name_map ~loc ~rec_flag ~type_name in
   let target_record =
     let fields =
-      List.map (Set.to_list target_fields) ~f:(fun name ->
+      List.map (String.Set.to_list target_fields) ~f:(fun name ->
         let expr =
-          if Set.mem modified_fields name
+          if String.Set.mem modified_fields name
           then (
             let f = evar ~loc (Naming.modify_field name) in
             pexp_apply ~loc f [ Nolabel, evar ~loc name ])
-          else if Set.mem fields_from_args name
+          else if String.Set.mem fields_from_args name
           then evar ~loc name
           else (
-            let ld = Map.find_exn fields name in
+            let ld = String.Map.find_exn fields name in
             Generic_map.build ~loc ~map:map_if_recursive ld.pld_type (evar ~loc name)
             |> set_any_recursive_and_return_expr ~any_recursive)
         in
@@ -79,7 +81,7 @@ let convert_record
     match !any_recursive with
     | false ->
       [%expr
-        let ([%p record_pat] : [%t source_type]) = _t in
+        let [%p record_pat] : [%t source_type] = _t in
         ([%e target_record] : [%t target_type])]
     | true ->
       [%expr
@@ -93,11 +95,11 @@ let convert_record
     if stackify then [%expr [%e acc] [@exclave_if_stack ppx_stable_alloc]] else acc
   in
   let acc =
-    Set.fold fields_from_args ~init:acc ~f:(fun acc name ->
+    String.Set.fold fields_from_args ~init:acc ~f:(fun acc name ->
       Ast_helpers.mk_pexp_fun ~loc ~name acc)
   in
   let acc =
-    Set.fold_right modified_fields ~init:acc ~f:(fun name acc ->
+    String.Set.fold_right modified_fields ~init:acc ~f:(fun name acc ->
       let name = Naming.modify_field name in
       Ast_helpers.mk_pexp_fun ~loc ~name acc)
   in
@@ -126,7 +128,7 @@ let create_ast_structure_items
       (Naming.ppx ~which_ppx:`Record)
   | Some target_type ->
     let current_fields =
-      Set.of_list (module String) (List.map fields ~f:(fun ld -> ld.pld_name.txt))
+      String.Set.of_list (List.map fields ~f:(fun ld -> ld.pld_name.txt))
     in
     Invariants.things_are_known
       ~thing_name:Naming.fields
@@ -146,7 +148,7 @@ let create_ast_structure_items
       ~loc
       ~all:current_fields
       set;
-    let other_fields = Set.diff (Set.union current_fields add) remove in
+    let other_fields = String.Set.diff (String.Set.union current_fields add) remove in
     let to_target_pat =
       Naming.conversion_function ~dir:`To ~source:type_name ~target:target_type
       |> pvar ~loc
@@ -199,5 +201,5 @@ let create_ast_structure_items
             blocks for all the functions to prevent unused warnings.
          *)
       Ppx_template_expander.Monomorphize.t#structure
-        Ppx_template_expander.Monomorphize.Context.top
+        (Ppx_template_expander.Monomorphize.Context.top ())
 ;;

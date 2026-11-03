@@ -1,4 +1,4 @@
-open Base
+open! Ppx_helpers.Base_lite
 open Ppxlib
 
 val mk_lident : loc:location -> string -> longident loc

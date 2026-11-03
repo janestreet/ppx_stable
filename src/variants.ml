@@ -1,11 +1,11 @@
-open Base
+open Ppx_helpers.Base_lite
 open Ppxlib
 open Ast_builder.Default
 
 let create_type_name_map ~loc ~rec_flag ~type_name =
   match rec_flag with
-  | Recursive -> Map.singleton (module String) type_name (evar ~loc Naming.recurse)
-  | Nonrecursive -> Map.empty (module String)
+  | Recursive -> String.Map.singleton type_name (evar ~loc Naming.recurse)
+  | Nonrecursive -> String.Map.empty
 ;;
 
 (* we only need to mark the function recursive if we made any recursive calls. the type
@@ -97,7 +97,7 @@ module Info = struct
   let to_map { constructors; _ } =
     constructors
     |> List.map ~f:(fun ({ Constructor.name; _ } as t) -> name, t)
-    |> Map.of_alist_exn (module String)
+    |> String.Map.of_alist_exn
   ;;
 
   let to_list { constructors; _ } = constructors
@@ -168,7 +168,7 @@ let generate_stable_variant_module ~loc ~variant_info =
     in
     let expr =
       List.fold_right
-        ~init:(pexp_function ~loc cases)
+        ~init:(pexp_function_cases ~loc cases)
         variant_constructors
         ~f:(fun { Constructor.name; _ } acc ->
           let name = String.lowercase name in
@@ -262,14 +262,14 @@ let convert_variant
   in
   let variant_constructors = Info.to_map variant_info in
   let rhs =
-    Set.fold source_variants ~init:acc ~f:(fun acc name ->
+    String.Set.fold source_variants ~init:acc ~f:(fun acc name ->
       let f =
-        if Set.mem modified_variants name
+        if String.Set.mem modified_variants name
         then evar ~loc (Naming.modify_field name)
-        else if not (Set.mem target_variants name)
+        else if not (String.Set.mem target_variants name)
         then evar ~loc (Naming.remove_field name)
         else (
-          let variant_constructor = Map.find_exn variant_constructors name in
+          let variant_constructor = String.Map.find_exn variant_constructors name in
           args_to_constructor_function ~variant_constructor)
       in
       pexp_apply ~loc acc [ Labelled (String.lowercase name), f ])
@@ -288,12 +288,15 @@ let convert_variant
         [%e evar ~loc Naming.recurse]]
   in
   let acc =
-    Set.fold (Set.diff source_variants target_variants) ~init:acc ~f:(fun acc name ->
-      let name = Naming.remove_field name in
-      Ast_helpers.mk_pexp_fun ~loc ~name acc)
+    String.Set.fold
+      (String.Set.diff source_variants target_variants)
+      ~init:acc
+      ~f:(fun acc name ->
+        let name = Naming.remove_field name in
+        Ast_helpers.mk_pexp_fun ~loc ~name acc)
   in
   let acc =
-    Set.fold_right modified_variants ~init:acc ~f:(fun name acc ->
+    String.Set.fold_right modified_variants ~init:acc ~f:(fun name acc ->
       let name = Naming.modify_field name in
       Ast_helpers.mk_pexp_fun ~loc ~name acc)
   in
@@ -312,7 +315,7 @@ let conversions_of_variant
   ~variant_info
   ~stackify
   =
-  let current_variants = Set.of_list (module String) (Info.names variant_info) in
+  let current_variants = String.Set.of_list (Info.names variant_info) in
   Invariants.things_are_known
     ~thing_name:Naming.variants
     ~supposed_to_be:Naming.removed
@@ -325,8 +328,9 @@ let conversions_of_variant
     ~loc
     ~all:current_variants
     modify;
-  if not (Set.is_empty set) then Location.raise_errorf ~loc "[set] is for record only";
-  let other_variants = Set.diff (Set.union current_variants add) remove in
+  if not (String.Set.is_empty set)
+  then Location.raise_errorf ~loc "[set] is for record only";
+  let other_variants = String.Set.diff (String.Set.union current_variants add) remove in
   let to_target =
     convert_variant
       ~loc
@@ -411,7 +415,7 @@ let create_ast_structure_items
           let [%p of_target_pat] = [%e of_target]]]
         (* See comment in [record.ml] *)
         |> Ppx_template_expander.Monomorphize.t#structure
-             Ppx_template_expander.Monomorphize.Context.top
+             (Ppx_template_expander.Monomorphize.Context.top ())
   in
   let helper_module = generate_stable_variant_module ~loc ~variant_info in
   helper_module @ conversions

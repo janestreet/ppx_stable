@@ -1,4 +1,4 @@
-open Base
+open Ppx_helpers.Base_lite
 open Ppxlib
 
 let conversion_function ~dir ~source ~target =

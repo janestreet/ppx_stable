@@ -29,14 +29,14 @@ module Basic_record = struct
     let _ = fun (_ : t) -> ()
 
     let to_V1_t (_t : t) ~modify_c ~d ~b1 =
-      let ({ a; b2 = _; c; d = _ } : t) = _t in
+      let { a; b2 = _; c; d = _ } : t = _t in
       ({ a; b1; c = modify_c c; d } : V1.t)
     ;;
 
     let _ = to_V1_t
 
     let of_V1_t (_t : V1.t) ~modify_c ~d ~b2 =
-      let ({ a; b1 = _; c; d = _ } : V1.t) = _t in
+      let { a; b1 = _; c; d = _ } : V1.t = _t in
       ({ a; b2; c = modify_c c; d } : t)
     ;;
 
@@ -67,14 +67,14 @@ module Types_not_named_t_and_nested = struct
       let _ = fun (_ : b) -> ()
 
       let b_to_V1_A_a (_t : b) ~modify_x =
-        let ({ x; y } : b) = _t in
+        let { x; y } : b = _t in
         ({ x = modify_x x; y } : V1.A.a)
       ;;
 
       let _ = b_to_V1_A_a
 
       let b_of_V1_A_a (_t : V1.A.a) ~modify_x =
-        let ({ x; y } : V1.A.a) = _t in
+        let { x; y } : V1.A.a = _t in
         ({ x = modify_x x; y } : b)
       ;;
 
@@ -96,14 +96,14 @@ module Nothing_to_convert = struct
     let _ = fun (_ : t) -> ()
 
     let to_V1_t (_t : t) =
-      let ({ x } : t) = _t in
+      let { x } : t = _t in
       ({ x } : V1.t)
     ;;
 
     let _ = to_V1_t
 
     let of_V1_t (_t : V1.t) =
-      let ({ x } : V1.t) = _t in
+      let { x } : V1.t = _t in
       ({ x } : t)
     ;;
 
@@ -639,14 +639,14 @@ module Mutable_record_field = struct
     let _ = fun (_ : t) -> ()
 
     let to_V1_t (_t : t) ~modify_x =
-      let ({ x } : t) = _t in
+      let { x } : t = _t in
       ({ x = modify_x x } : V1.t)
     ;;
 
     let _ = to_V1_t
 
     let of_V1_t (_t : V1.t) ~modify_x =
-      let ({ x } : V1.t) = _t in
+      let { x } : V1.t = _t in
       ({ x = modify_x x } : t)
     ;;
 

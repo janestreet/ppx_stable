@@ -592,14 +592,14 @@ module Type_is_recursive_but_upgrade_doesn't_need_rec = struct
     let _ = fun (_ : t) -> ()
 
     let to_V1_t (_t : t) ~modify_c1 ~c_bad ~c2 =
-      let ({ c1 } : t) = _t in
+      let { c1 } : t = _t in
       ({ c1 = modify_c1 c1; c2; c_bad } : V1.t)
     ;;
 
     let _ = to_V1_t
 
     let of_V1_t (_t : V1.t) ~modify_c1 =
-      let ({ c1; c2 = _; c_bad = _ } : V1.t) = _t in
+      let { c1; c2 = _; c_bad = _ } : V1.t = _t in
       ({ c1 = modify_c1 c1 } : t)
     ;;
 
@@ -1094,6 +1094,55 @@ module Record_basic_stackify = struct
     ;;
 
     let _ = of_V1_t__stack]
+
+    [@@@end]
+  end
+end
+
+module With_functor_application = struct
+  module V1 = struct
+    type t = A of t Base.Map.M(Base.Char).t [@@deriving stable_variant]
+  end
+
+  module V2 = struct
+    type t = A of t Base.Map.M(Base.Char).t
+    [@@deriving_inline stable_variant ~version:V1.t]
+
+    include struct
+      [@@@ocaml.warning "-60"]
+
+      let _ = fun (_ : t) -> ()
+
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~a:a_fun = function
+            | A v0 -> a_fun v0
+          ;;
+
+          let _ = map
+        end
+      end
+
+      let to_V1_t =
+        let rec recurse (v : t) : V1.t =
+          Stable_variant.Helper.map v ~a:(fun v0 ->
+            V1.A (Base.Map.map v0 ~f:(fun x -> recurse x)))
+        in
+        recurse
+      ;;
+
+      let _ = to_V1_t
+
+      let of_V1_t =
+        let rec recurse (v : V1.t) : t =
+          V1.Stable_variant.Helper.map v ~a:(fun v0 ->
+            A (Base.Map.map v0 ~f:(fun x -> recurse x)))
+        in
+        recurse
+      ;;
+
+      let _ = of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end

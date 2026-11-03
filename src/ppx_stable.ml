@@ -1,4 +1,4 @@
-open Base
+open Ppx_helpers.Base_lite
 open Ppxlib
 open Ast_builder.Default
 
@@ -44,10 +44,10 @@ end
 let conversions_of_td ~ppx_name ~target_type ~rec_flag ~stackify changes td =
   let ({ add; modify; set; remove } : _ Changes_by_type.t) = changes in
   let loc = td.ptype_loc in
-  let add = Set.of_list (module String) add in
-  let modify = Set.of_list (module String) modify in
-  let remove = Set.of_list (module String) remove in
-  let set = Set.of_list (module String) set in
+  let add = String.Set.of_list add in
+  let modify = String.Set.of_list modify in
+  let remove = String.Set.of_list remove in
+  let set = String.Set.of_list set in
   Invariants.all_disjoints ~loc ~add ~modify ~remove ~set;
   let current_type =
     Ast_helper.Typ.constr

@@ -1,4 +1,4 @@
-open! Base
+open! Ppx_helpers.Base_lite
 open Ppxlib
 
 (** This module constructs a generic type-directed map function.
@@ -19,7 +19,7 @@ type replace_result =
 
 val build
   :  loc:location
-  -> map:(string, expression, 'a) Base.Map.t
+  -> map:expression String.Map.t
   -> core_type
   -> expression
   -> replace_result * expression
