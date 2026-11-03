@@ -1,4 +1,4 @@
-open! Base
+open! Ppx_helpers.Base_lite
 open Ppxlib
 open Ast_builder.Default
 
@@ -38,6 +38,16 @@ let rec needs_mapping = function
   | Constr_t (_, ts) | Tuple ts -> List.exists ts ~f:needs_mapping
 ;;
 
+(* Handles e.g. [Set.M(My_type).t] and returns [Set.map]. *)
+let map_function_longident ~loc = function
+  | (Ldot _ | Lident _) as module_path -> Ldot (module_path, "map")
+  | Lapply (Ldot (module_path, "M"), _) -> Ldot (module_path, "map")
+  | Lapply _ ->
+    Location.raise_errorf
+      ~loc
+      "ppx_stable only supports functor application types of the form My_module.M(...).t"
+;;
+
 let rec apply ~loc ~map t expr =
   match t with
   | None -> expr
@@ -50,7 +60,9 @@ let rec apply ~loc ~map t expr =
      | Iarray -> [%expr Base.Iarray.map ~f:[%e apply_fn ~loc ~map t] [%e expr]]
      | Lazy -> [%expr lazy [%e apply ~loc ~map t [%expr Stdlib.Lazy.force [%e expr]]]])
   | Constr_t (longident, ts) ->
-    let map_fn = pexp_ident ~loc (Located.mk ~loc (Ldot (longident, "map"))) in
+    let map_fn =
+      pexp_ident ~loc (Located.mk ~loc (map_function_longident ~loc longident))
+    in
     (match ts with
      | [] -> expr
      | [ t ] -> [%expr [%e map_fn] [%e expr] ~f:[%e apply_fn ~loc ~map t]]
@@ -61,7 +73,7 @@ let rec apply ~loc ~map t expr =
            Labelled ("f" ^ Int.to_string (i + 1)), apply_fn ~loc ~map t)
        in
        pexp_apply ~loc map_fn exprs)
-  | Replace text -> [%expr [%e Map.find_exn map text] [%e expr]]
+  | Replace text -> [%expr [%e String.Map.find_exn map text] [%e expr]]
   | Tuple ts ->
     let names = List.mapi ts ~f:(fun i _ -> "v" ^ Int.to_string i) in
     pexp_let
@@ -85,7 +97,7 @@ let rec find_targets ~target ~loc core_type =
   | Ptyp_constr (lid_loc, args) ->
     (match lid_loc.txt with
      | Lapply _ -> Location.raise_errorf ~loc "Unexpected Lapply"
-     | Lident text when Set.mem target text -> Replace text
+     | Lident text when String.Set.mem target text -> Replace text
      | Lident text ->
        (match Pervasive.of_string text with
         | None -> None
@@ -113,6 +125,6 @@ type replace_result =
   | Replaced
 
 let build ~loc ~map ty expr =
-  let t = find_targets ~target:(Set.of_list (module String) (Map.keys map)) ~loc ty in
+  let t = find_targets ~target:(String.Set.of_list (String.Map.keys map)) ~loc ty in
   if needs_mapping t then Replaced, apply ~loc ~map t expr else Unchanged, expr
 ;;

@@ -1,15 +1,15 @@
 (** Code-gen for records. Creates [to_] and [of_] functions *)
 
-open Base
+open Ppx_helpers.Base_lite
 open Ppxlib
 
 val create_ast_structure_items
   :  loc:location
   -> fields:label_declaration list
-  -> add:(label, String.comparator_witness) Set.t
-  -> remove:(label, String.comparator_witness) Set.t
-  -> modify:(label, String.comparator_witness) Set.t
-  -> set:(label, String.comparator_witness) Set.t
+  -> add:String.Set.t
+  -> remove:String.Set.t
+  -> modify:String.Set.t
+  -> set:String.Set.t
   -> target_type:core_type option
   -> current_type:core_type
   -> rec_flag:rec_flag

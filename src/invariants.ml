@@ -1,17 +1,17 @@
-open Base
+open Ppx_helpers.Base_lite
 open Ppxlib
 
 let set_to_string set =
   set
-  |> Set.to_list
+  |> String.Set.to_list
   |> List.map ~f:(fun field_name -> Printf.sprintf "'%s'" field_name)
   |> String.concat ~sep:", "
 ;;
 
 let all_disjoints ~loc ~add ~remove ~modify ~set =
   let check ?suggestion (n1, s1) (n2, s2) =
-    let common = Set.inter s1 s2 in
-    if not (Set.is_empty common)
+    let common = String.Set.inter s1 s2 in
+    if not (String.Set.is_empty common)
     then
       Location.raise_errorf
         ~loc
@@ -34,8 +34,8 @@ let all_disjoints ~loc ~add ~remove ~modify ~set =
 ;;
 
 let things_are_known ~loc ~all ~thing_name ~supposed_to_be things =
-  let unknown_things = Set.diff things all in
-  if not (Set.is_empty unknown_things)
+  let unknown_things = String.Set.diff things all in
+  if not (String.Set.is_empty unknown_things)
   then (
     let str = set_to_string unknown_things in
     Location.raise_errorf

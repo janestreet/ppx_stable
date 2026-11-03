@@ -542,7 +542,6 @@ module Basic_record_stackify = struct
 
     let _ = fun (_ : ('a, 'b, 'c, 'd) t) -> ()
 
-    [%%template
     let to_V1_t (_t : ('a, 'b, 'c, 'd) t) ~modify_c ~d ~b1 =
       let { a; b2 = _; c; d = _ } : ('a, 'b, 'c, 'd) t = _t in
       ({ a; b1; c = modify_c c; d } : ('a, 'b, 'c, 'd) V1.t)
@@ -556,20 +555,8 @@ module Basic_record_stackify = struct
     ;;
 
     let _ = of_V1_t
-
-    let to_V1_t__stack (_t : ('a, 'b, 'c, 'd) t) ~modify_c ~d ~b1 =
-      let { a; b2 = _; c; d = _ } : ('a, 'b, 'c, 'd) t = _t in
-      ({ a; b1; c = modify_c c; d } : ('a, 'b, 'c, 'd) V1.t)
-    ;;
-
-    let _ = to_V1_t__stack
-
-    let of_V1_t__stack (_t : ('a, 'b, 'c, 'd) V1.t) ~modify_c ~d ~b2 =
-      let { a; b1 = _; c; d = _ } : ('a, 'b, 'c, 'd) V1.t = _t in
-      ({ a; b2; c = modify_c c; d } : ('a, 'b, 'c, 'd) t)
-    ;;
-
-    let _ = of_V1_t__stack]
+    let _ = to_V1_t
+    let _ = of_V1_t
 
     [@@@end]
   end
@@ -679,7 +666,6 @@ module Basic_variant_stackify = struct
         end
       end
 
-      [%%template
       let to_V1_t
         ~modify_Z1
         ~modify_Z2
@@ -729,56 +715,8 @@ module Basic_variant_stackify = struct
       ;;
 
       let _ = of_V1_t
-
-      let to_V1_t__stack
-        ~modify_Z1
-        ~modify_Z2
-        ~modify_Z3
-        ~remove_Y3
-        ~remove_Y2
-        ~remove_Y1
-        (v : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) t)
-        : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) V1.t
-        =
-        Stable_variant.Helper.map
-          v
-          ~i0:(fun () -> V1.I0)
-          ~i1:(fun v0 -> V1.I1 v0)
-          ~i2:(fun v0 v1 -> V1.I2 (v0, v1))
-          ~y1:remove_Y1
-          ~y2:remove_Y2
-          ~y3:remove_Y3
-          ~z1:modify_Z1
-          ~z2:modify_Z2
-          ~z3:modify_Z3
-      ;;
-
-      let _ = to_V1_t__stack
-
-      let of_V1_t__stack
-        ~modify_Z1
-        ~modify_Z2
-        ~modify_Z3
-        ~remove_X3
-        ~remove_X2
-        ~remove_X1
-        (v : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) V1.t)
-        : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) t
-        =
-        V1.Stable_variant.Helper.map
-          v
-          ~i0:(fun () -> I0)
-          ~i1:(fun v0 -> I1 v0)
-          ~i2:(fun v0 v1 -> I2 (v0, v1))
-          ~x1:remove_X1
-          ~x2:remove_X2
-          ~x3:remove_X3
-          ~z1:modify_Z1
-          ~z2:modify_Z2
-          ~z3:modify_Z3
-      ;;
-
-      let _ = of_V1_t__stack]
+      let _ = to_V1_t
+      let _ = of_V1_t
     end [@@ocaml.doc "@inline"]
 
     [@@@end]

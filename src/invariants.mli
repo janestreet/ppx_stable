@@ -1,18 +1,18 @@
-open Base
+open Ppx_helpers.Base_lite
 open Ppxlib
 
 val all_disjoints
   :  loc:location
-  -> add:(string, 'cmp) Set.t
-  -> remove:(string, 'cmp) Set.t
-  -> modify:(string, 'cmp) Set.t
-  -> set:(string, 'cmp) Set.t
+  -> add:String.Set.t
+  -> remove:String.Set.t
+  -> modify:String.Set.t
+  -> set:String.Set.t
   -> unit
 
 val things_are_known
   :  loc:location
-  -> all:(string, 'cmp) Set.t
+  -> all:String.Set.t
   -> thing_name:string
   -> supposed_to_be:string
-  -> (string, 'cmp) Set.t
+  -> String.Set.t
   -> unit

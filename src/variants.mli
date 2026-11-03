@@ -1,7 +1,7 @@
 (** Code-gen for both variants and polymorphic variants. Creates [to_] and [of_]
     functions, as well as [Stable_variant.Helper...] *)
 
-open Base
+open Ppx_helpers.Base_lite
 open Ppxlib
 
 module Info : sig
@@ -19,10 +19,10 @@ end
 
 val create_ast_structure_items
   :  loc:location
-  -> add:(string, String.comparator_witness) Set.t
-  -> modify:(string, String.comparator_witness) Set.t
-  -> remove:(string, String.comparator_witness) Set.t
-  -> set:(string, String.comparator_witness) Set.t
+  -> add:String.Set.t
+  -> modify:String.Set.t
+  -> remove:String.Set.t
+  -> set:String.Set.t
   -> target_type:core_type option
   -> current_type:core_type
   -> rec_flag:rec_flag

@@ -592,14 +592,14 @@ module Type_is_recursive_but_upgrade_doesn't_need_rec = struct
     let _ = fun (_ : t) -> ()
 
     let to_V1_t (_t : t) ~modify_c1 ~c_bad ~c2 =
-      let ({ c1 } : t) = _t in
+      let { c1 } : t = _t in
       ({ c1 = modify_c1 c1; c2; c_bad } : V1.t)
     ;;
 
     let _ = to_V1_t
 
     let of_V1_t (_t : V1.t) ~modify_c1 =
-      let ({ c1; c2 = _; c_bad = _ } : V1.t) = _t in
+      let { c1; c2 = _; c_bad = _ } : V1.t = _t in
       ({ c1 = modify_c1 c1 } : t)
     ;;
 
@@ -999,7 +999,6 @@ module Variant_basic_stackify = struct
         end
       end
 
-      [%%template
       let to_V1_t ~modify_B ~modify_C ~modify_D (v : t) : V1.t =
         Stable_variant.Helper.map
           v
@@ -1021,28 +1020,8 @@ module Variant_basic_stackify = struct
       ;;
 
       let _ = of_V1_t
-
-      let to_V1_t__stack ~modify_B ~modify_C ~modify_D (v : t) : V1.t =
-        Stable_variant.Helper.map
-          v
-          ~a:(fun () -> V1.A)
-          ~b:modify_B
-          ~c:modify_C
-          ~d:modify_D
-      ;;
-
-      let _ = to_V1_t__stack
-
-      let of_V1_t__stack ~modify_B ~modify_C ~modify_D (v : V1.t) : t =
-        V1.Stable_variant.Helper.map
-          v
-          ~a:(fun () -> A)
-          ~b:modify_B
-          ~c:modify_C
-          ~d:modify_D
-      ;;
-
-      let _ = of_V1_t__stack]
+      let _ = to_V1_t
+      let _ = of_V1_t
     end [@@ocaml.doc "@inline"]
 
     [@@@end]
@@ -1066,7 +1045,6 @@ module Record_basic_stackify = struct
 
     let _ = fun (_ : t) -> ()
 
-    [%%template
     let to_V1_t (_t : t) =
       let rec recurse ({ a; b } : t) : V1.t = { a; b = recurse b } in
       recurse _t
@@ -1080,20 +1058,57 @@ module Record_basic_stackify = struct
     ;;
 
     let _ = of_V1_t
+    let _ = to_V1_t
+    let _ = of_V1_t
 
-    let to_V1_t__stack (_t : t) =
-      let rec recurse ({ a; b } : t) : V1.t = { a; b = recurse b } in
-      recurse _t
-    ;;
+    [@@@end]
+  end
+end
 
-    let _ = to_V1_t__stack
+module With_functor_application = struct
+  module V1 = struct
+    type t = A of t Base.Map.M(Base.Char).t [@@deriving stable_variant]
+  end
 
-    let of_V1_t__stack (_t : V1.t) =
-      let rec recurse ({ a; b } : V1.t) : t = { a; b = recurse b } in
-      recurse _t
-    ;;
+  module V2 = struct
+    type t = A of t Base.Map.M(Base.Char).t
+    [@@deriving_inline stable_variant ~version:V1.t]
 
-    let _ = of_V1_t__stack]
+    include struct
+      [@@@ocaml.warning "-60"]
+
+      let _ = fun (_ : t) -> ()
+
+      module Stable_variant = struct
+        module Helper = struct
+          let map ~a:a_fun = function
+            | A v0 -> a_fun v0
+          ;;
+
+          let _ = map
+        end
+      end
+
+      let to_V1_t =
+        let rec recurse (v : t) : V1.t =
+          Stable_variant.Helper.map v ~a:(fun v0 ->
+            V1.A (Base.Map.map v0 ~f:(fun x -> recurse x)))
+        in
+        recurse
+      ;;
+
+      let _ = to_V1_t
+
+      let of_V1_t =
+        let rec recurse (v : V1.t) : t =
+          V1.Stable_variant.Helper.map v ~a:(fun v0 ->
+            A (Base.Map.map v0 ~f:(fun x -> recurse x)))
+        in
+        recurse
+      ;;
+
+      let _ = of_V1_t
+    end [@@ocaml.doc "@inline"]
 
     [@@@end]
   end
